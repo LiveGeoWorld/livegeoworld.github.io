@@ -1,54 +1,308 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LiveGeo — Geographic Agents in Continuously Evolving Worlds</title><meta name="description" content="GeoWorld is a geographic world simulator. LiveGeo evaluates geographic agents in the evolving worlds built on it."><link rel="icon" href="assets/logo.png"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="research.css"><link rel="stylesheet" href="paper-v2.css"></head><body>
-<a class="skip" href="#main">Skip to content</a><header><div class="nav wrap"><a class="wordmark" href="#"><img src="assets/logo.png" width="34" height="34" alt="">LiveGeo</a><nav aria-label="Main navigation"><a href="#abstract">Overview</a><a href="#geoworld">GeoWorld</a><a href="#benchmark">LiveGeo</a><a href="#results">Findings</a><a href="#analysis">Analysis</a><a href="#case">Cases</a></nav></div></header>
-<main id="main"><section class="hero wrap"><div class="project-name"><img src="assets/logo.png" width="72" height="72" alt="">LiveGeo</div><h1>Benchmarking Geographic Agents<br>in <em>Continuously Evolving Worlds</em></h1><p class="authors">Pengcheng Zhou<sup>1</sup>, Xuanyu Liu<sup>2</sup>, Yanchen Yin<sup>3</sup>, Tianjie Ju<sup>1</sup>,<br>Shengqiong Wu<sup>4</sup>, Hao Fei<sup>4</sup>, Mong-Li Lee<sup>1</sup>, Wynne Hsu<sup>1</sup></p><p class="affiliations"><span><sup>1</sup> National University of Singapore</span><span><sup>2</sup> Zhejiang University</span><span><sup>3</sup> Beijing University of Posts and Telecommunications</span><span><sup>4</sup> University of Oxford</span></p><p class="hero-summary">A correct answer is only the beginning.<br>Can an agent keep its decisions grounded as the world changes?</p><div class="resource-buttons"><a class="primary" href="#film">Watch overview ↓</a><a href="#abstract">Read the abstract</a><a href="#resources">Project &amp; code</a></div></section>
+<a class="skip" href="#main">Skip to content</a><header><div class="nav wrap"><a class="wordmark" href="#"><img src="assets/logo.png" width="34" height="34" alt="">LiveGeo</a><nav aria-label="Main navigation"><a href="#abstract">Overview</a><a href="#geoworld">GeoWorld</a><a href="#benchmark">LiveGeo</a><a href="#experiment">Experiments</a><a href="#results">Findings</a><a href="#case">Cases</a></nav></div></header>
+<main id="main"><section id="authors-and-title" class="hero wrap"><div class="project-name"><img src="assets/logo.png" width="72" height="72" alt="">LiveGeo</div><h1>Benchmarking Geographic Agents<br> in <em>Continuously Evolving Worlds</em></h1><p class="authors">Pengcheng Zhou<sup>1,†</sup>, Xuanyu Liu<sup>2,†</sup>, Yanchen Yin<sup>3</sup>, Tianjie Ju<sup>1</sup>,<br> Shengqiong Wu<sup>4,*</sup>, Hao Fei<sup>4</sup>, Mong-Li Lee<sup>1</sup>, Wynne Hsu<sup>1</sup></p><p class="affiliations"><span><sup>1</sup> National University of Singapore</span><span><sup>2</sup> Zhejiang University</span><span><sup>3</sup> Beijing University of Posts and Telecommunications</span><span><sup>4</sup> University of Oxford</span></p><p class="figure-note author-notes">† Equal contribution · * Corresponding author</p><div class="resource-buttons"><a class="primary" href="#film">Watch overview ↓</a><a href="#abstract">Read the abstract</a><a href="#resources">Project &amp; code</a></div></section>
 <section id="film" class="wrap film-section"><div class="section-heading"><div><span class="eyebrow">PROJECT OVERVIEW</span><h2>GeoWorld &amp; LiveGeo</h2></div><p>An introduction to the environment, benchmark, and a dynamic task example.</p></div><div class="film-player"><video id="project-video" controls playsinline preload="metadata" poster="video-v8/apps-9.jpg" aria-label="Introduction to GeoWorld and LiveGeo"><source src="video-v9/geoworld-livegeo-narrated.mp4" type="video/mp4">Your browser does not support video. <a href="video-v9/geoworld-livegeo-narrated.mp4">Download the introduction.</a></video></div></section>
 <section id="abstract" class="wrap section abstract-section">
  <span class="eyebrow">ABSTRACT</span><h2>Making a valid decision is one problem.<br>Keeping it valid is another.</h2>
- <div class="abstract-copy"><p>We introduce <strong>GeoWorld</strong>, a controllable geographic environment grounded in real-world urban structure, and <strong>LiveGeo</strong>, a benchmark built on it. External states evolve along their own temporal processes, while recorded world histories preserve verifiability. Agents must actively acquire task-relevant information, check whether earlier evidence remains valid, and revise their plans when necessary.</p><p>Experiments with nine proprietary and open-source models reveal substantial limitations even under static conditions, and strong static performance does not ensure dynamic reliability. Further analysis distinguishes two bottlenecks: acquiring relevant evidence, and translating that evidence into decisions that remain valid as the world changes.</p></div>
- <div class="paper-stats" aria-label="Benchmark scale"><div><strong>1,237</strong><span>task instances</span><small>1,088 static + 149 dynamic</small></div><div><strong>7</strong><span>task categories</span><small>3 atomic + 4 compositional</small></div><div><strong>6</strong><span>real-world cities</span><small>1,376 points of interest</small></div><div><strong>9</strong><span>evaluated models</span><small>3 independent runs per task</small></div></div>
+ <div class="abstract-copy">
+  <p>We introduce <strong>GeoWorld</strong>, a controllable and continuously evolving geographic environment for LLM agents, and <strong>LiveGeo</strong>, a benchmark built on GeoWorld to evaluate reliable geographic decision-making. Existing evaluations typically ask agents to reason and plan over fixed geographic states. GeoWorld is grounded in real-world geography and lets external conditions evolve over time independently of agent actions, while preserving verifiable histories of world states. LiveGeo places geographic tasks in this evolving environment, requiring agents to actively seek task-relevant information, check whether the evidence behind earlier decisions still holds, and revise their plans when necessary.</p>
+  <p>Even frontier LLMs struggle with static tasks, and no model consistently excels across task categories. Strong static performance does not ensure reliability under changing conditions. Our analysis shows that agents often miss relevant changes and can still make invalid decisions after observing every necessary update. By releasing LiveGeo alongside GeoWorld, we aim to provide an extensible platform for studying how agents make and maintain valid decisions in evolving geographic worlds.</p>
+ </div>
+ <div class="paper-stats" aria-label="Benchmark scale"><div><strong>1,237</strong><span>task instances</span><small>1,088 static + 149 dynamic</small></div><div><strong>7 + 1</strong><span>Static + Dynamic</span><small>3 atomic + 4 compositional + 1&nbsp;dynamic&nbsp;suite</small></div><div><strong>6</strong><span>real-world cities</span><small>1,376 points of interest</small></div><div><strong>9</strong><span>evaluated models</span><small>3 independent runs per task</small></div></div>
 </section>
 <section id="problem" class="band"><div class="wrap section">
- <div class="section-heading"><div><span class="eyebrow">01 / RESEARCH QUESTION</span><h2>Beyond answering once:<br>does the evidence still hold?</h2></div><p>A place can close. A route can become slower. Several city events may occur, but only some affect the task. A reliable agent must determine what changed—and what that change means for its decision.</p></div>
- <div class="comparison-table"><div class="comparison-head"><span>Evaluation perspective</span><b>Fixed geographic snapshot</b><b>Evolving geographic world</b></div><div><span>World conditions</span><p>Relevant conditions remain fixed during execution.</p><p>External events change state along a shared timeline.</p></div><div><span>Information gathering</span><p>Find evidence sufficient for an initial answer.</p><p>Discover relevant updates and recheck affected evidence.</p></div><div><span>Decision responsibility</span><p>Establish that a decision is valid.</p><p>Maintain its validity, or revise it without breaking other constraints.</p></div></div>
- <p class="research-question">Can agents sustain evidence-grounded decisions in continuously evolving geographic environments?</p>
+ <span class="eyebrow">01 / RESEARCH QUESTION</span>
+ <h2>Can agents make and maintain valid geographic decisions as the world changes?</h2>
+ <p class="question-context">As conditions change, agents need to check whether the evidence behind an earlier decision still holds and revise the decision when necessary.</p>
+ <div class="research-question-grid">
+  <a href="#finding-q1"><span>Q1</span><strong>How well can agents make valid geographic decisions?</strong><small>View Finding 1 →</small></a>
+  <a href="#finding-q2"><span>Q2</span><strong>How well can agents maintain valid geographic decisions as the world evolves?</strong><small>View Findings 2–5 →</small></a>
+  <a href="#finding-q3"><span>Q3</span><strong>Where does reliable decision-making break down?</strong><small>View Finding 6 →</small></a>
+ </div>
 </div></section>
 <section id="geoworld" class="wrap section method-section">
  <div class="section-heading"><div><span class="eyebrow">02 / GEOWORLD</span><h2>A changing world.<br>A verifiable interaction history.</h2></div><p>GeoWorld separates persistent geographic structure from time-varying states, then aligns each observation and action with the world state at that time.</p></div>
- <figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/architecture.png" data-caption="Figure 2 · GeoWorld architecture."><img src="assets/paper-v3/architecture.png" alt="Paper Figure 2: persistent geographic structure, time-varying world states, tool interactions, and state-aligned logging." loading="lazy"><span>View architecture in detail ↗</span></button><figcaption><b>Figure 2 · GeoWorld.</b> A world state combines geographic structure and dynamic conditions: <span class="math" aria-label="W sub t equals G comma X sub t">W<sub>t</sub> = (G, X<sub>t</sub>)</span>. Agents interact through public tools; histories preserve the state associated with each interaction.</figcaption></figure>
- <div class="method-notes"><article><span>1</span><div><h3>Shared geographic structure</h3><p>Places, roads, regions, and their spatial relations ground the environment. The instantiation covers Shanghai, Tokyo, Singapore, London, New York, and Cape Town.</p></div></article><article><span>2</span><div><h3>Exogenous events, virtual time</h3><p>Agents choose when to advance the virtual clock. Scheduled events determine which changes take effect; their occurrence does not depend on the agent’s decisions.</p></div></article><article><span>3</span><div><h3>State-aligned observations</h3><p>Public tool responses reflect the current virtual time. Queries, observations, and actions are recorded with timestamps and world-state references for later verification.</p></div></article></div>
- <p class="geo-coverage">Geographic substrate: <b>97 regions</b> · <b>1,376 POIs</b> · <b>107,372 cached route records</b> · <b>31 tool types</b></p>
+ <figure class="research-figure">
+  <button id="geoworld-figure" type="button" class="figure-button enlarge" data-image="assets/paper-v3/architecture.png" data-caption="Figure 2 · GeoWorld architecture.">
+   <span class="geoworld-image">
+    <img src="assets/paper-v3/architecture.png" alt="Paper Figure 2: geographic structure, time-varying world states, tool interfaces, and interaction logging." loading="lazy">
+    <svg class="geoworld-overlay" viewBox="0 0 2000 1165" preserveAspectRatio="none" aria-hidden="true">
+     <g data-zone="structure" hidden>
+      <path d="M0 0H2000V1165H0Z M303 36H1224V306H303Z M1587 634H1981V729H1587Z"/>
+      <rect x="303" y="36" width="921" height="270" rx="12"/>
+      <rect x="1587" y="634" width="394" height="95"/>
+     </g>
+     <g data-zone="events" hidden>
+      <path d="M0 0H2000V1165H0Z M1236 36H1980V306H1236Z M390 324H1530V774H338V566L390 542Z"/>
+      <rect x="1236" y="36" width="744" height="270" rx="12"/>
+      <polygon points="390,324 1530,324 1530,774 338,774 338,566 390,542"/>
+     </g>
+     <g data-zone="observations" hidden>
+      <path d="M0 0H2000V1165H0Z M299 790H1980V1060H299Z"/>
+      <rect x="299" y="790" width="1681" height="270" rx="12"/>
+     </g>
+    </svg>
+   </span>
+   <span>View architecture in detail ↗</span>
+  </button>
+  <figcaption><b>Figure 2 · GeoWorld.</b> A world state combines geographic structure and dynamic conditions: <span class="math" aria-label="W sub t equals G comma X sub t">W<sub>t</sub> = (G, X<sub>t</sub>)</span>.</figcaption>
+ </figure>
+ <div class="method-notes" role="group" aria-label="Highlight GeoWorld components">
+  <button type="button" class="geoworld-note" data-geoworld-focus="structure" aria-pressed="false" aria-controls="geoworld-figure"><span class="geoworld-note-number" aria-hidden="true">1</span><span><strong>Shared geographic structure</strong><span class="geoworld-note-copy">Places, roads, and regions share a common spatial reference. This ties changing conditions, such as traffic or place availability, to the entities they affect.</span></span></button>
+  <button type="button" class="geoworld-note" data-geoworld-focus="events" aria-pressed="false" aria-controls="geoworld-figure"><span class="geoworld-note-number" aria-hidden="true">2</span><span><strong>Exogenous events and virtual time</strong><span class="geoworld-note-copy">Agents choose when to advance virtual time. Scheduled events determine what changes take effect as time advances.</span></span></button>
+  <button type="button" class="geoworld-note" data-geoworld-focus="observations" aria-pressed="false" aria-controls="geoworld-figure"><span class="geoworld-note-number" aria-hidden="true">3</span><span><strong>State-aligned observations</strong><span class="geoworld-note-copy">Tools return observations for the current virtual time. GeoWorld records each query, observation, and action with its timestamp and world-state reference.</span></span></button>
+ </div>
+ <p class="geoworld-transition">GeoWorld lets us replay a task from the same starting state. <a href="#benchmark">LiveGeo</a> uses that capability to compare static and dynamic versions of selected tasks.</p>
 </section>
 <section id="benchmark" class="band"><div class="wrap section">
- <div class="section-heading"><div><span class="eyebrow">03 / LIVEGEO</span><h2>What must a geographic<br>decision depend on?</h2></div><p>LiveGeo separates geographic capability from temporal setting. Task-specific checks evaluate the decision, its feasibility, and the evidence that supports it.</p></div>
- <div class="taxonomy-paper"><div class="taxonomy-paper-head"><b>Task category</b><b>Decision dependency</b></div><div class="taxonomy-family">Atomic · establish local validity</div><div><b>Grounding</b><p>Resolve visual or textual evidence to the exact geographic entity.</p></div><div><b>Discovery</b><p>Translate intent into destinations satisfying joint spatial, service, and preference requirements.</p></div><div><b>Mobility Planning</b><p>Satisfy journey requirements, including waypoints, dwell times, modes, and deadlines.</p></div><div class="taxonomy-family">Compositional · compose jointly valid decisions</div><div><b>Multi-Entity</b><p>Coordinate location and availability constraints across participants.</p></div><div><b>Long-Horizon</b><p>Preserve downstream feasibility across linked activities and time windows.</p></div><div><b>Safety-Aware</b><p>Ground destination and access-route choices in relevant safety evidence.</p></div><div><b>Region-Aware</b><p>Use regional practices, schedules, and geographic context to constrain valid choices.</p></div></div>
- <div class="subsection-title"><span>SETTINGS</span><h3>Same initial task, different information conditions.</h3></div>
- <div class="settings-grid"><article><span class="setting-dot static"></span><h4>Static</h4><p>The task-relevant state remains fixed. Establish decision validity from the available geographic evidence.</p></article><article><span class="setting-dot taskonly"></span><h4>Task-Only Dynamics</h4><p>Task events change the relevant conditions. The agent must discover their public updates and reassess the decision.</p></article><article><span class="setting-dot shared"></span><h4>Shared Dynamics</h4><p>Task events coexist with unrelated world events. The agent must also distinguish which changes matter.</p></article></div>
- <p class="research-body-copy">The dynamic evaluation uses <strong>149 matched tasks</strong> with the same initial state, user request, and constraints. All models encounter the same replayed event schedules. An additional Explicit Update experiment gives three representative models every necessary update, separating information discovery from decision revision.</p>
- <div class="subsection-title"><span>VERIFICATION</span><h3>A correct answer needs the right support.</h3></div>
+ <div class="section-heading">
+  <div><span class="eyebrow">03 / LIVEGEO</span><h2>A benchmark for geographic<br>decision-making</h2></div>
+  <p>Built on GeoWorld, LiveGeo tests whether agents can make valid geographic decisions and maintain them as traffic, place availability, and user requirements change.</p>
+ </div>
+ <div id="task-coverage" class="livegeo-task-coverage">
+ <div class="taxonomy-paper"><div class="taxonomy-paper-head"><b>Task category</b><b>Decision dependency</b></div><div class="taxonomy-family">Atomic · establish local validity</div><div><b>Grounding</b><p>Resolve visual or textual evidence to the exact geographic entity.</p></div><div><b>Discovery</b><p>Translate intent into destinations satisfying joint spatial, service, and preference requirements.</p></div><div><b>Mobility Planning</b><p>Satisfy journey requirements, including waypoints, dwell times, modes, and deadlines.</p></div><div class="taxonomy-family">Compositional · compose jointly valid decisions</div><div><b>Multi-Entity</b><p>Coordinate location and availability constraints across participants.</p></div><div><b>Long-Horizon</b><p>Preserve downstream feasibility across linked activities and time windows.</p></div><div><b>Safety-Aware</b><p>Ground destination and access-route choices in relevant safety evidence.</p></div><div><b>Region-Aware</b><p>Use regional practices, schedules, and geographic context to constrain valid choices.</p></div><div class="taxonomy-extension"><b>+&nbsp;Dynamic Tasks</b><p>Selected static tasks gain time-stamped events. Agents reassess their earlier decisions when those events change the conditions.</p></div></div>
+ </div>
+ <div id="construction-explorer" class="construction-explorer">
+  <div class="subsection-title"><h3>Build geographic tasks with GeoWorld</h3></div>
+  <figure class="research-figure" id="construction-overview">
+   <button type="button" class="figure-button enlarge" data-image="assets/paper-v3/construction.png" data-caption="Figure 3 · LiveGeo construction pipeline."><img src="assets/paper-v3/construction.png" alt="Figure 3: static task construction, dynamic pairing, and quality control." loading="lazy"><span>Inspect the construction pipeline ↗</span></button>
+   <figcaption><b>Figure 3 · LiveGeo construction pipeline.</b> Static tasks start with a reference solution and verifiable constraints. Dynamic counterparts start from the same conditions and request, then introduce validated events that change the reference solution.</figcaption>
+  </figure>
+  <div class="result-tabs construction-filters" role="group" aria-label="Highlight construction workflows">
+   <button type="button" data-construction-focus="atomic" aria-pressed="false" aria-controls="construction-grid">Atomic · 3</button>
+   <button type="button" data-construction-focus="compositional" aria-pressed="false" aria-controls="construction-grid">Compositional · 4</button>
+   <button type="button" data-construction-focus="dynamic" aria-pressed="false" aria-controls="construction-grid">Dynamic · 2</button>
+  </div>
+  <div id="construction-grid" class="construction-grid">
+   <button type="button" class="construction-tile enlarge" data-construction-item="atomic" data-image="assets/construction-v5/grounding.png" data-caption="Grounding · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/grounding-thumb.jpg" alt="" loading="lazy"><span>Grounding</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="atomic" data-image="assets/construction-v5/discovery.png" data-caption="Discovery · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/discovery-thumb.jpg" alt="" loading="lazy"><span>Discovery</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="atomic" data-image="assets/construction-v5/mobility.png" data-caption="Mobility Planning · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/mobility-thumb.jpg" alt="" loading="lazy"><span>Mobility Planning</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="compositional" data-image="assets/construction-v5/multi-entity.png" data-caption="Multi-Entity · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/multi-entity-thumb.jpg" alt="" loading="lazy"><span>Multi-Entity</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="compositional" data-image="assets/construction-v5/long-horizon.png" data-caption="Long-Horizon · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/long-horizon-thumb.jpg" alt="" loading="lazy"><span>Long-Horizon</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="compositional" data-image="assets/construction-v5/safety-aware.png" data-caption="Safety-Aware · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/safety-aware-thumb.jpg" alt="" loading="lazy"><span>Safety-Aware</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="compositional" data-image="assets/construction-v5/region-aware.png" data-caption="Region-Aware · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/region-aware-thumb.jpg" alt="" loading="lazy"><span>Region-Aware</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="dynamic" data-image="assets/construction-v5/dynamic-events.png" data-caption="Dynamic event generation · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/dynamic-events-thumb.jpg" alt="" loading="lazy"><span>Dynamic event generation</span>
+   </button>
+   <button type="button" class="construction-tile enlarge" data-construction-item="dynamic" data-image="assets/construction-v5/event-protection.png" data-caption="Event protection · LiveGeo construction details (paper appendix).">
+    <img src="assets/construction-v5/event-protection-thumb.jpg" alt="" loading="lazy"><span>Event protection</span>
+   </button>
+  </div>
+ </div>
+ <div id="verification">
+ <div class="subsection-title"><h3>How decisions are verified</h3></div>
+ <p class="figure-note">LiveGeo evaluates agents along four dimensions. The checks that apply depend on the task.</p>
  <div class="evaluation-aspects"><div><b>Decision correctness</b><p>Does the final choice satisfy task-specific correctness criteria?</p></div><div><b>Plan executability</b><p>Are the spatial, temporal, transport, and operational constraints met?</p></div><div><b>Evidence support</b><p>Do the recorded observations substantiate the agent’s decision?</p></div><div><b>Dynamic adaptability</b><p>Does the agent respond appropriately to task-relevant changes?</p></div></div>
- <p class="boundary-note">Applicable criteria vary by task. Verification uses output contracts and constraint checks—not exact answer matching. Private reference evidence and Judge rules remain separate from the tested agent’s public observations.</p>
- <details class="supporting-detail"><summary>Construction and experimental protocol <span aria-hidden="true">+</span></summary><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/construction.png" data-caption="Figure 3 · LiveGeo construction pipeline."><img src="assets/paper-v3/construction.png" alt="Original construction figure: fact anchoring, task specification, user request, dynamic pairing, and automated plus human quality control." loading="lazy"><span>Inspect the construction pipeline ↗</span></button><figcaption>Verified static tasks are paired with validated dynamic episodes. Programmatic checks and human review preserve constraints, observability, and public/private separation.</figcaption></figure><p class="protocol-note"><b>Common evaluation scaffold:</b> ReAct · 50 interaction steps per task · temperature 0.1 · full interaction context · three independent runs per instance. See paper §§4.2–5.1.</p></details>
+ <div class="success-explorer">
+  <div class="success-explorer-header">
+   <h4>What counts as success?</h4>
+   <label for="success-task">Task
+    <select id="success-task" aria-controls="success-rule">
+     <optgroup label="Atomic tasks">
+      <option value="grounding">Grounding</option>
+      <option value="discovery">Discovery</option>
+      <option value="mobility" selected>Mobility Planning</option>
+     </optgroup>
+     <optgroup label="Compositional tasks">
+      <option value="multi-entity">Multi-Entity</option>
+      <option value="long-horizon">Long-Horizon</option>
+      <option value="safety">Safety-Aware</option>
+      <option value="region">Region-Aware</option>
+     </optgroup>
+     <option value="dynamic">+ Dynamic Tasks</option>
+    </select>
+   </label>
+  </div>
+  <div id="success-rule" aria-live="polite" aria-atomic="true">
+   <p data-success-rule="grounding" hidden><strong>Select the correct place through the tool and name it correctly in the final response.</strong></p>
+   <p data-success-rule="discovery" hidden><strong>Submit a complete place selection.</strong> The submitted name and coordinates must match the same entry in the verified set of acceptable answers.</p>
+   <p data-success-rule="mobility"><strong>Judge trip feasibility correctly and pass at least four of the six remaining checks.</strong> These cover route connectivity, required stops in order, allowed transport modes, total time including stops, walking distance, and the tool-call budget.</p>
+   <p data-success-rule="multi-entity" hidden><strong>Select the correct meeting place.</strong> Place selection determines whether the task passes. Five separate checks describe how the agent handled feasibility, budget, dietary needs, shared availability, and participant notifications.</p>
+   <p data-success-rule="long-horizon" hidden><strong>Submit a complete itinerary that works across all days.</strong> The submission must correctly judge feasibility and uniquely identify each required stop in order. The itinerary must match an accepted plan or be verified as a feasible alternative.</p>
+   <p data-success-rule="safety" hidden><strong>Choose a valid destination and support the choice with the required safety notices.</strong> The agent must declare the task feasible, meet all applicable constraints, and obtain and faithfully report the required notices through the tools.</p>
+   <p data-success-rule="region" hidden><strong>Declare the task feasible and select a destination that fits the regional requirements.</strong> The submitted name and coordinates must identify the same place in the verified set of acceptable answers.</p>
+   <p data-success-rule="dynamic" hidden><strong>Observe and report every task-bound event, then submit the correct post-event decision.</strong> After the initial checkpoint, the agent must obtain each event through its App and reproduce its full public message verbatim. The structured output must be valid. The evaluator also requires the percentage of applicable checks passed in that run to be at least 70% after rounding.</p>
+  </div>
+ </div>
+ </div>
 </div></section>
-<section id="results" class="wrap section results-section">
- <div class="section-heading"><div><span class="eyebrow">04 / RESULTS &amp; FINDINGS</span><h2>Static strength does not ensure<br>dynamic reliability.</h2></div><p>Nine evaluated models show different geographic capability profiles. World changes reveal further weaknesses that fixed-state evaluation does not capture.</p></div>
- <article class="finding finding-static"><div class="finding-index">01</div><div><h3>Difficulty goes beyond satisfying explicit constraints.</h3><p>Multi-Entity achieves <strong>30.8%</strong> average success, despite combining constraints across participants. Safety-Aware reaches only <strong>12.9%</strong>, and Long-Horizon <strong>3.4%</strong>. Difficulty depends on the evidence needed to establish validity and on keeping linked decisions feasible—not simply the number of constraints. Even the strongest overall static model, Gemini 3.7 Flash, reaches only 27.8% success.</p><span class="evidence-ref">Table 3 · §5.2 · Seven static categories; not the matched dynamic subset.</span></div></article>
- <div class="finding-pair"><article class="finding-chart"><div class="finding-label">02 / WORLD EVOLUTION</div><h3>Most static success is lost under dynamics.</h3><p>Mean success across nine models on the same 149 matched tasks.</p><div class="mean-bars" role="img" aria-label="Mean task success: Static 19.1 percent, Task-Only 5.7 percent, Shared 4.0 percent. Axis from 0 to 30 percent."><div class="bar-axis"><span>0</span><span>10</span><span>20</span><span>30%</span></div><div class="bar-row"><span>Static</span><div><i class="static" style="width:63.6667%"></i></div><b>19.1%</b></div><div class="bar-row"><span>Task-Only</span><div><i class="taskonly" style="width:19%"></i></div><b>5.7%</b></div><div class="bar-row"><span>Shared</span><div><i class="shared" style="width:13.3333%"></i></div><b>4.0%</b></div></div><p class="chart-takeaway"><strong>70.3%</strong> and <strong>79.3%</strong> relative declines from Static to Task-Only and Shared Dynamics, respectively.</p><span class="evidence-ref">Table 3 · §5.3 · Means reported in the paper; axis is task success (%).</span></article>
- <article class="finding-chart"><div class="finding-label">03 / INFORMATION VS. REVISION</div><h3>Providing every update does not restore static performance.</h3><p>Separate experiment: GPT-5.6 Sol, Claude Opus 5, and Gemini 3.7 Flash.</p><div class="mean-bars" role="img" aria-label="Three-model mean success: Static 21.9 percent, Explicit Update 16.3 percent, Task-Only 7.2 percent, Shared 5.4 percent. Axis from 0 to 30 percent."><div class="bar-axis"><span>0</span><span>10</span><span>20</span><span>30%</span></div><div class="bar-row"><span>Static</span><div><i class="static" style="width:73%"></i></div><b>21.9%</b></div><div class="bar-row"><span>Explicit Update</span><div><i class="explicit" style="width:54.3333%"></i></div><b>16.3%</b></div><div class="bar-row"><span>Task-Only</span><div><i class="taskonly" style="width:24%"></i></div><b>7.2%</b></div><div class="bar-row"><span>Shared</span><div><i class="shared" style="width:18%"></i></div><b>5.4%</b></div></div><p class="chart-takeaway">Understanding updates, discovering them, and separating them from unrelated events each introduce difficulty.</p><span class="evidence-ref">Figure 6(a) · §5.3 · Three-model means; not the nine-model aggregate at left.</span></article></div>
- <div class="results-detail"><div class="table-heading"><div><h3>Model-level results</h3><p>Success rate (%) · mean ± standard error, as reported in Table 3.</p></div><div class="result-tabs" role="tablist" aria-label="Result settings"><button role="tab" id="result-tab-static" aria-selected="true" aria-controls="result-panel" data-results="static">Static capabilities</button><button role="tab" id="result-tab-dynamic" aria-selected="false" tabindex="-1" aria-controls="result-panel" data-results="dynamic">Matched dynamic evaluation</button></div></div><p class="table-swipe">Swipe the table to view every task column →</p><div id="result-panel" role="tabpanel" aria-labelledby="result-tab-static"><p id="result-description" class="table-context">Seven task categories evaluated under fixed world states.</p><div class="table-scroll" tabindex="0" role="region" aria-label="Model results table; scroll horizontally on small screens"><table id="results-table"><caption class="sr-only">Model success rates from paper Table 3.</caption><thead></thead><tbody></tbody></table></div><p class="figure-note">Bold marks the best mean in each column. Dynamic columns use the same 149 matched tasks; the matched Static column is not a model’s average across the full static benchmark.</p></div></div>
- <details class="supporting-detail"><summary>Task-by-task changes under world dynamics <span aria-hidden="true">+</span></summary><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/dynamic-impact.png" data-caption="Figure 5 · Change in task success, in percentage points, from matched Static to Task-Only and Shared Dynamics."><img src="assets/paper-v3/dynamic-impact.png" alt="Original Figure 5 showing model and task-specific changes in success rate under Task-Only and Shared Dynamics." loading="lazy"><span>Inspect task-specific changes ↗</span></button><figcaption>Different decision requirements show different sensitivity to world evolution. Values are percentage-point changes, not relative percentage declines.</figcaption></figure></details>
+<section id="experiment" class="wrap section results-section">
+ <div class="section-heading"><div><span class="eyebrow">04 / EXPERIMENTS</span><h2>Evaluating geographic agents</h2></div><p>We evaluate nine models on LiveGeo to compare geographic decision-making under fixed and changing conditions.</p></div>
+ <div class="subsection-title"><h3>Evaluation environment</h3></div>
+ <div class="experiment-environment">
+  <div><h4>World coverage</h4><dl class="experiment-coverage"><div><dt>Real-world cities</dt><dd>6</dd></div><div><dt>Regions</dt><dd>88</dd></div><div><dt>Points of interest</dt><dd>1,376</dd></div><div><dt>Cached routes</dt><dd>107,372</dd></div></dl></div>
+  <div><h4>Task composition</h4>
+   <div class="task-composition-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+   <b class="task-composition-total">1,237 task instances</b>
+   <div class="task-composition-key">
+    <span><i class="composition-atomic"></i>478 Atomic</span>
+    <span><i class="composition-compositional"></i>610 Compositional</span>
+    <span><i class="composition-dynamic"></i>149 Matched dynamic</span>
+   </div>
+  </div>
+ </div>
+ <div class="subsection-title"><h3>Experimental setup</h3></div>
+ <p class="experiment-setup-copy">All nine models use the same ReAct framework and tool-access protocol. Each model runs each task three times independently, with up to 50 interaction steps per run.</p>
+ <p class="experiment-setup-copy">The matched evaluation uses the same 149 tasks in three settings.</p>
+ <div id="evaluation-settings">
+  <div class="experiment-settings-summary" role="tablist" aria-label="Evaluation settings">
+   <button type="button" role="tab" id="replay-tab-static" aria-selected="true" aria-controls="replay-panel" data-replay="static"><b>Static</b><span>Task-relevant conditions stay fixed.</span></button>
+   <button type="button" role="tab" id="replay-tab-taskonly" aria-selected="false" aria-controls="replay-panel" tabindex="-1" data-replay="taskonly"><b>Task-Only Dynamics</b><span>Only events bound to the task are included.</span></button>
+   <button type="button" role="tab" id="replay-tab-shared" aria-selected="false" aria-controls="replay-panel" tabindex="-1" data-replay="shared"><b>Shared Dynamics</b><span>Task-bound events coexist with other events in the same world.</span></button>
+  </div>
+  <div class="matched-replay" id="replay-panel" role="tabpanel" aria-labelledby="replay-tab-static" tabindex="0">
+   <p class="replay-request"><strong>Example task.</strong> Can you drive from MorganCargo to Dis-Chem Claremont Pharmacy within 56 minutes, including a mandatory 20-minute meeting at PEP Cape Town Woodstock?</p>
+   <figure class="replay-map">
+    <div class="replay-map-frame">
+     <img class="replay-map-base" src="assets/paper-v3/cape-town-google-map.webp" alt="Cape Town street map" width="2080" height="880" loading="lazy">
+     <canvas width="1040" height="440" aria-hidden="true"></canvas>
+     <span class="replay-direction" data-replay-leg="1" aria-hidden="true"></span>
+     <span class="replay-direction" data-replay-leg="2" aria-hidden="true"></span>
+     <span class="replay-pin" data-map-point="start" aria-hidden="true">1</span>
+     <span class="replay-pin" data-map-point="meeting" aria-hidden="true">2</span>
+     <span class="replay-pin" data-map-point="end" aria-hidden="true">3</span>
+     <span class="replay-pin replay-traffic-pin" data-map-point="traffic" data-replay-traffic hidden aria-hidden="true">!<span class="replay-map-message"><b>13:20 · N2 collision</b><small>+12 min on Leg 1 to Woodstock only</small></span></span>
+     <span class="replay-pin replay-other-pin" data-map-point="other" data-replay-unrelated hidden aria-hidden="true"><span class="replay-map-message"><b>Off-route venue closure</b><small>Illustrative · No effect on trip</small></span></span>
+    </div>
+    <figcaption>
+     <ol class="replay-stops">
+      <li><span aria-hidden="true">1</span><div><b>MorganCargo</b><small>Start</small></div></li>
+      <li><span aria-hidden="true">2</span><div><b>PEP Cape Town Woodstock</b><small>20-minute meeting</small></div></li>
+      <li><span aria-hidden="true">3</span><div><b>Dis-Chem Claremont Pharmacy</b><small>Destination</small></div></li>
+     </ol>
+    </figcaption>
+   </figure>
+   <ol class="replay-timeline" aria-label="How the trip assessment changes" aria-live="polite">
+    <li><span>Initial estimate</span><strong>49 min 22 s</strong><small>17 min 38 s driving + 20 min meeting + 11 min 44 s driving.</small></li>
+    <li><span>Events in this setting</span>
+     <p data-replay-empty>Road conditions stay fixed across both driving legs.</p>
+     <p data-replay-traffic hidden><b>13:20 · N2 traffic alert</b> A collision near the Roodebloem Road exit slows one section of the N2. The 12-minute delay applies only to the first leg toward Woodstock.</p>
+     <p data-replay-unrelated hidden><b>Off-route closure</b> leaves the trip unchanged. <span class="replay-example-label">Illustrative</span></p>
+    </li>
+    <li><span>Assessment of the same trip</span><strong data-replay-duration>49 min 22 s</strong><small data-replay-outcome>Within the 56-minute limit.</small></li>
+   </ol>
+   <div class="replay-meter">
+    <div class="replay-meter-label"><span>Estimated trip duration (min:sec)</span><strong data-replay-meter-label>49:22 / 56:00 limit</strong></div>
+    <div class="replay-meter-track" aria-hidden="true"><span class="replay-base"></span><span class="replay-delay" hidden></span><i></i></div>
+    <div class="replay-meter-scale" aria-hidden="true"><span>0 min</span><span>56 min limit</span><span>70 min</span></div>
+   </div>
+  </div>
+ </div>
+ <section id="agent-interaction" aria-labelledby="agent-interaction-title">
+  <div class="subsection-title"><h3 id="agent-interaction-title">Agent Interaction Protocol</h3></div>
+  <p class="agent-runtime-settings"><strong>Runtime settings</strong> · Full visible interaction history retained · Temperature 0.1 · Up to 10,000 generated tokens per turn</p>
+  <ol class="agent-run-steps">
+   <li><span class="agent-step-number" aria-hidden="true">1</span><div><h4>Receive the task</h4><p>The agent receives the task instructions, App catalog, and user request.</p></div></li>
+   <li><span class="agent-step-number" aria-hidden="true">2</span><div><h4>Thought → Action → Observation</h4><p>Each ReAct turn allows up to one tool call. The returned observation is added to the interaction history.</p></div></li>
+   <li><span class="agent-step-number" aria-hidden="true">3</span><div><h4>Submit the decision</h4><p>The agent explicitly submits a final answer in the format required for the task.</p></div></li>
+  </ol>
+  <div class="agent-dynamic-run">
+   <b>Dynamic runs</b>
+   <ol aria-label="Dynamic run sequence">
+    <li>Submit an initial plan and a later query time</li>
+    <li>GeoWorld advances time and scheduled events take effect</li>
+    <li>The agent actively queries Apps for updates</li>
+    <li>Submit the final decision</li>
+   </ol>
+  </div>
+ </section>
+ <div class="results-detail" id="main-results"><div class="table-heading"><div><h3>Main results</h3><p>Task success rate (%) · mean ± standard error</p></div><div class="result-tabs" role="tablist" aria-label="Result settings"><button role="tab" id="result-tab-static" aria-selected="true" aria-controls="result-panel" data-results="static">Static capabilities</button><button role="tab" id="result-tab-dynamic" aria-selected="false" tabindex="-1" aria-controls="result-panel" data-results="dynamic">Matched dynamic evaluation</button></div></div><p class="table-swipe">Swipe the table to view every task column →</p><div id="result-panel" role="tabpanel" aria-labelledby="result-tab-static"><p id="result-description" class="table-context">1,088 static tasks across seven categories.</p><div class="table-scroll" tabindex="0" role="region" aria-label="Model results table; scroll horizontally on small screens"><table id="results-table"><caption class="sr-only">Model success rates from paper Table 3.</caption><thead></thead><tbody></tbody></table></div><p class="figure-note">Bold marks the best mean in each column.</p></div></div>
 </section>
-<section id="analysis" class="band"><div class="wrap section">
- <div class="section-heading"><div><span class="eyebrow">05 / DECISION MAINTENANCE</span><h2>Seeing a change is not the same<br>as deciding correctly.</h2></div><p>State-aligned trajectories reveal two separate gaps: agents often fail to revisit affected information, and may still decide incorrectly after acquiring it.</p></div>
+<section id="results" class="wrap section results-section" aria-labelledby="findings-heading">
+ <div class="section-heading"><div><span class="eyebrow">05 / FINDINGS</span><h2 id="findings-heading">Making and maintaining valid geographic decisions</h2></div><p>We examine where agents struggle on static tasks, how performance changes as the world evolves, and where failures occur.</p></div>
+ <nav class="finding-question-links" aria-label="Research questions">
+  <a href="#finding-q1">Q1 · Make a decision</a>
+  <a href="#finding-q2">Q2 · Maintain a decision</a>
+  <a href="#finding-q3">Q3 · Locate failures</a>
+ </nav>
+ <section id="finding-q1" class="finding-question" aria-labelledby="finding-q1-heading">
+  <div class="subsection-title"><span>Q1 · FINDING 1</span><h3 id="finding-q1-heading">How well can agents make valid geographic decisions?</h3></div>
+ <article class="finding finding-static"><div class="finding-index">01</div><div><h3>Difficulty goes beyond satisfying explicit constraints.</h3><p>Multi-Entity achieves <strong>30.8%</strong> average success, despite combining constraints across participants. Safety-Aware reaches only <strong>12.9%</strong>, and Long-Horizon <strong>3.4%</strong>. Difficulty depends on the evidence needed to establish validity and on keeping linked decisions feasible—not simply the number of constraints. Even the strongest overall static model, Gemini 3.7 Flash, reaches only 27.8% success.</p><span class="evidence-ref">Table 3 · §5.2 · <a href="#main-results">View the complete results table →</a></span></div></article>
+ </section>
+ <section id="finding-q2" class="finding-question" aria-labelledby="finding-q2-heading">
+  <div class="subsection-title"><span>Q2 · FINDINGS 2–5</span><h3 id="finding-q2-heading">How well can agents maintain valid geographic decisions as the world evolves?</h3></div>
+ <div class="finding-pair findings-comparison"><article class="finding-chart"><div class="finding-label">02 / WORLD EVOLUTION</div><h3>Most static success is lost under dynamics.</h3><p>Mean success across nine models on the same 149 matched tasks.</p><div class="mean-bars" role="img" aria-label="Mean task success: Static 19.1 percent, Task-Only 5.7 percent, Shared 4.0 percent. Axis from 0 to 30 percent."><div class="bar-axis"><span>0</span><span>10</span><span>20</span><span>30%</span></div><div class="bar-row"><span>Static</span><div><i class="static" style="width:63.6667%"></i></div><b>19.1%</b></div><div class="bar-row"><span>Task-Only</span><div><i class="taskonly" style="width:19%"></i></div><b>5.7%</b></div><div class="bar-row"><span>Shared</span><div><i class="shared" style="width:13.3333%"></i></div><b>4.0%</b></div></div><p class="chart-takeaway"><strong>70.3%</strong> and <strong>79.3%</strong> relative declines from Static to Task-Only and Shared Dynamics, respectively.</p><span class="evidence-ref">Table 3 · §5.3 · Means reported in the paper; axis is task success (%).</span>
+ <div class="model-comparison" id="model-compare">
+  <h4>Compare two models on the same tasks</h4>
+  <p>Success rate on 149 matched tasks. Bars use a common 0–30% scale.</p>
+  <div class="model-selects">
+   <label>Model A<select id="comparison-model-a" disabled></select></label>
+   <label>Model B<select id="comparison-model-b" disabled></select></label>
+  </div>
+  <div id="comparison-bars" aria-live="polite"></div>
+ </div>
+</article>
+ <article class="finding-chart" id="condition-compare"><div class="finding-label">03 / WHERE PERFORMANCE DROPS</div><h3>Providing every update does not restore static performance.</h3><p>Separate experiment: GPT-5.6 Sol, Claude Opus 5, and Gemini 3.7 Flash.</p><div class="mean-bars" role="img" aria-label="Three-model mean success: Static 21.9 percent, Explicit Update 16.3 percent, Task-Only 7.2 percent, Shared 5.4 percent. Axis from 0 to 30 percent."><div class="bar-axis"><span>0</span><span>10</span><span>20</span><span>30%</span></div><div class="bar-row"><span>Static</span><div><i class="static" style="width:73%"></i></div><b>21.9%</b></div><div class="bar-row"><span>Explicit Update</span><div><i class="explicit" style="width:54.3333%"></i></div><b>16.3%</b></div><div class="bar-row"><span>Task-Only</span><div><i class="taskonly" style="width:24%"></i></div><b>7.2%</b></div><div class="bar-row"><span>Shared</span><div><i class="shared" style="width:18%"></i></div><b>5.4%</b></div></div><div class="condition-switch result-tabs" role="tablist" aria-label="Compare adjacent conditions">
+  <button type="button" role="tab" id="contrast-tab-provided" data-contrast="provided" aria-controls="contrast-panel" aria-selected="true">1 · Provided</button>
+  <button type="button" role="tab" id="contrast-tab-discover" data-contrast="discover" aria-controls="contrast-panel" aria-selected="false" tabindex="-1">2 · Discovered</button>
+  <button type="button" role="tab" id="contrast-tab-filter" data-contrast="filter" aria-controls="contrast-panel" aria-selected="false" tabindex="-1">3 · Filtered</button>
+ </div>
+ <div id="contrast-panel" class="contrast-panel" role="tabpanel" aria-labelledby="contrast-tab-provided" tabindex="0">
+  <strong>Static → Explicit Update · −5.6 pp</strong><p>Task-relevant conditions change, and the agent receives every necessary update directly. Success still falls below Static.</p>
+ </div><span class="evidence-ref">Figure 6(a) · §5.3 · Three-model means; not the nine-model aggregate at left.</span></article></div>
+ <details class="supporting-detail"><summary>Task-by-task changes under world dynamics <span aria-hidden="true">+</span></summary><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/dynamic-impact.png" data-caption="Figure 5 · Change in task success, in percentage points, from matched Static to Task-Only and Shared Dynamics."><img src="assets/paper-v3/dynamic-impact.png" alt="Original Figure 5 showing model and task-specific changes in success rate under Task-Only and Shared Dynamics." loading="lazy"><span>Inspect task-specific changes ↗</span></button><figcaption>Different decision requirements show different sensitivity to world evolution. Values are percentage-point changes, not relative percentage declines.</figcaption></figure></details>
+ <section id="analysis" class="findings-maintenance" aria-labelledby="maintenance-heading">
+ <div class="section-heading"><div><span class="eyebrow">FINDINGS 4–5</span><h3 id="maintenance-heading">Decision maintenance</h3></div><p>State-aligned trajectories reveal two separate gaps: agents often fail to revisit affected information, and may still decide incorrectly after acquiring it.</p></div>
+ <div class="maintenance-overview">
+  <div class="result-tabs" role="tablist" aria-label="Decision maintenance setting">
+   <button type="button" role="tab" id="coverage-tab-taskonly" aria-selected="true" aria-controls="coverage-panel" data-coverage="taskonly">Task-Only Dynamics</button>
+   <button type="button" role="tab" id="coverage-tab-shared" aria-selected="false" aria-controls="coverage-panel" tabindex="-1" data-coverage="shared">Shared Dynamics</button>
+  </div>
+  <div id="coverage-panel" class="coverage-stages" role="tabpanel" aria-labelledby="coverage-tab-taskonly" tabindex="0">
+   <div><strong data-coverage-observed>14.1%</strong><b>Observed every necessary event</b><small>Among all runs in this setting</small></div>
+   <div><strong data-coverage-correct>43.1%</strong><b>Made the correct final decision</b><small>Among runs that observed every necessary event</small></div>
+  </div>
+  <p class="figure-note">Observation and decision correctness · Figure 9, §5.4</p>
+ </div>
  <div class="analysis-tabs" role="tablist" aria-label="Decision maintenance analyses"><button role="tab" id="analysis-tab-monitoring" aria-selected="true" aria-controls="maintenance-panel" data-analysis="monitoring">04 · Tracking relevant changes</button><button role="tab" id="analysis-tab-grounding" aria-selected="false" tabindex="-1" aria-controls="maintenance-panel" data-analysis="grounding">05 · Turning updates into decisions</button></div>
  <div id="maintenance-panel" role="tabpanel" aria-labelledby="analysis-tab-monitoring"><div class="maintenance-view" id="maintenance-monitoring"><div class="analysis-intro"><h3>More queries do not necessarily mean better monitoring.</h3><p>Only <strong>20.6%</strong> of eligible Task-Only runs and <strong>18.0%</strong> of Shared runs issue a targeted query after a necessary event. Across total-query-count groups, mean necessary-event coverage remains below 30%.</p></div><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/post-change-checking.png" data-caption="Figure 8 · Post-change checking and necessary-event coverage."><img src="assets/paper-v3/post-change-checking.png" alt="Original Figure 8: post-change targeted queries, missing rechecks, and event coverage by query counts." loading="lazy"><span>Inspect post-change checking ↗</span></button><figcaption><b>Figure 8 · Query what the change affects.</b> Targeted-query rates are conditional on runs reaching a necessary event. “No recheck” rates use runs that had consulted relevant information before the change. Coverage and querying are associated; this is not a causal intervention.</figcaption></figure></div>
- <div class="maintenance-view grounding-view" id="maintenance-grounding" hidden><div><div class="finding-label">AMONG RUNS THAT OBSERVE EVERY NECESSARY EVENT</div><h3>Accurate event reports can still support an invalid decision.</h3><p>Only <strong>43.1%</strong> of these Task-Only runs and <strong>39.9%</strong> of Shared runs produce a correct final decision.</p><div class="conditional-pair"><div><strong>36.4%</strong><span>Task-Only</span></div><div><strong>38.6%</strong><span>Shared</span></div></div><p>correctly report the necessary events, but still decide incorrectly.</p><p class="figure-note">Conditional subset: runs observing all necessary events. These are not percentages of all benchmark runs, nor overall task success rates. Paper Figure 9(b), §5.4.</p></div><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/decision-grounding.png" data-caption="Figure 9(b) · Joint correctness of event reports and final decisions, among runs that observe all necessary events."><img src="assets/paper-v3/decision-grounding.png" alt="Original decision-grounding donut charts: Task-Only 40.3 both correct, 36.4 event only, 2.8 decision only, 20.5 neither; Shared 35.3, 38.6, 4.6, 21.6 percent respectively." loading="lazy"><span>Inspect decision grounding ↗</span></button></figure></div></div>
- <article class="failure-summary"><div><span class="finding-label">06 / FAILURE ATTRIBUTION</span><h3>Different settings expose different bottlenecks.</h3><p>Static failures are dominated by evidence acquisition, verification, and integration. Under dynamics, monitoring is the largest primary failure category.</p></div><div class="failure-number"><strong>37.3%</strong><b>Evidence hallucination</b><span>of attributed static failures</span></div><div class="failure-number"><strong>79.4%</strong><b>Change monitoring failure</b><span>of attributed dynamic failures</span></div><p class="failure-caveat">Each failed execution receives one primary attribution. Earlier monitoring failures can mask later revision errors; the distribution does not imply that revision is reliable once a change is observed. Paper §5.5.</p></article>
-</div></section>
+ <div class="maintenance-view grounding-view" id="maintenance-grounding" hidden><div><div class="finding-label">AMONG RUNS THAT OBSERVE EVERY NECESSARY EVENT</div><h3>Agents can report the right changes and still make the wrong decision.</h3><p>Only <strong>43.1%</strong> of these Task-Only runs and <strong>39.9%</strong> of Shared runs produce a correct final decision.</p><div class="conditional-pair"><div><strong>36.4%</strong><span>Task-Only</span></div><div><strong>38.6%</strong><span>Shared</span></div></div><p>correctly report the necessary events, but still decide incorrectly.</p><p class="figure-note">Conditional subset: runs observing all necessary events. These are not percentages of all benchmark runs, nor overall task success rates. Paper Figure 9(b), §5.4.</p></div><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/decision-grounding.png" data-caption="Figure 9(b) · Joint correctness of event reports and final decisions, among runs that observe all necessary events."><img src="assets/paper-v3/decision-grounding.png" alt="Original decision-grounding donut charts: Task-Only 40.3 both correct, 36.4 event only, 2.8 decision only, 20.5 neither; Shared 35.3, 38.6, 4.6, 21.6 percent respectively." loading="lazy"><span>Inspect decision grounding ↗</span></button></figure></div></div>
+ </section>
+ </section>
+ <section id="finding-q3" class="finding-question" aria-labelledby="finding-q3-heading">
+  <div class="subsection-title"><span>Q3 · FINDING 6</span><h3 id="finding-q3-heading">Where does reliable decision-making break down?</h3></div>
+ <article id="failure-attribution" class="failure-summary"><div><span class="finding-label">06 / FAILURE ATTRIBUTION</span><h3>Different settings expose different bottlenecks.</h3><p>Static failures are dominated by evidence acquisition, verification, and integration. Under dynamics, monitoring is the largest primary failure category.</p></div><div class="failure-number"><strong>37.3%</strong><b>Evidence hallucination</b><span>of attributed static failures</span></div><div class="failure-number"><strong>79.4%</strong><b>Change monitoring failure</b><span>of attributed dynamic failures</span></div><p class="failure-caveat">Each failed execution receives one primary attribution. Earlier monitoring failures can mask later revision errors; the distribution does not imply that revision is reliable once a change is observed. Paper §5.5.</p></article>
+ <details class="supporting-detail" id="failure-breakdown"><summary>Explore the failure attribution <span aria-hidden="true">+</span></summary>
+  <div class="failure-breakdown-grid">
+   <div><h4>Static · evidence-related failures</h4><dl><div><dt>Evidence hallucination</dt><dd>37.3%</dd></div><div><dt>Intent-to-search failure</dt><dd>20.4%</dd></div><div><dt>Discriminative verification failure</dt><dd>16.1%</dd></div><div><dt>Evidence integration failure</dt><dd>8.7%</dd></div></dl><p>These four categories account for <strong>82.5%</strong> of attributed static failures.</p></div>
+   <div><h4>Dynamics · monitoring and revision</h4><dl><div><dt>Change monitoring failure</dt><dd>79.4%</dd></div><div><dt>Task-relevance confusion</dt><dd>4.9%</dd></div><div><dt>Event applicability misjudgment</dt><dd>3.0%</dd></div><div><dt>Decision inertia</dt><dd>5.2%</dd></div><div><dt>Constraint-preserving replanning failure</dt><dd>7.6%</dd></div></dl></div>
+  </div><p class="figure-note">Percentages use attributed failures within each setting. Dynamic shares may sum to slightly more than 100% due to rounding. Figures 10–11, §5.5.</p>
+ </details>
+ </section>
+</section>
 <section id="case" class="wrap section real-case-section">
- <div class="section-heading"><div><span class="eyebrow">06 / CASE STUDY</span><h2>The same traffic alert.<br>Three paths to a final decision.</h2></div><p>A recorded Task-Only Dynamics case from Cape Town shows how acquiring an update and committing a consistent decision can fail at different stages.</p></div>
+ <div class="section-heading"><div><span class="eyebrow">06 / CASE STUDY</span><h2>The same traffic alert.<br>Three paths to a final decision.</h2></div><p>This recorded Cape Town case from Task-Only Dynamics holds the user’s request fixed. The same alert tests whether each agent finds the update, reassesses the trip, and submits the resulting decision.</p></div>
  <div class="case-problem"><span>THE TASK</span><p>Help Gamieda Petersen complete a trip via PEP Cape Town Woodstock for a mandatory <strong>20-minute meeting</strong>, then reach Dis-Chem Claremont Pharmacy. Total time must not exceed <strong>56 minutes</strong>.</p><div class="time-equations"><div><span>Before the update</span><b>17:38 driving + 20:00 meeting + 11:44 driving</b><strong>49:22 <small>≤ 56 min · feasible</small></strong></div><div><span>13:20 · traffic alert adds 12 minutes</span><b>49:22 + 12:00 delay</b><strong>61:22 <small>&gt; 56 min · infeasible</small></strong></div></div><p class="figure-note">Times are minutes:seconds. The user’s requirements do not change.</p></div>
+ <div class="subsection-title"><span>FIGURE 4 · RECORDED TRACES</span><h3>What did each agent observe and submit?</h3></div>
+ <p class="case-evidence-link">These traces show two gaps measured in <a href="#analysis">Q2’s decision maintenance analysis</a>: acquiring the relevant update and carrying it through to the final decision.</p>
  <div class="case-model-tabs" role="tablist" aria-label="Recorded model traces"><button role="tab" id="trace-tab-monitoring" aria-selected="true" aria-controls="trace-panel" data-trace="monitoring">Claude Sonnet 5</button><button role="tab" id="trace-tab-revision" aria-selected="false" tabindex="-1" aria-controls="trace-panel" data-trace="revision">Gemini 3.7 Flash</button><button role="tab" id="trace-tab-inertia" aria-selected="false" tabindex="-1" aria-controls="trace-panel" data-trace="inertia">Claude Opus 5</button></div>
- <div id="trace-panel" role="tabpanel" aria-labelledby="trace-tab-monitoring" class="trace-panel"><div><span id="trace-kind" class="finding-label">MISSED UPDATE</span><h3 id="trace-title">Checks weather, but does not recheck traffic.</h3><p id="trace-description">After early CityNews queries return no alert, the model advances time and checks weather only. It does not acquire the traffic update that affects the trip.</p><div class="trace-verdict"><span>SUBMITTED DECISION</span><b id="trace-verdict">feasible: true</b><p id="trace-consequence">The answer still uses about 50 minutes against the unchanged 56-minute limit.</p></div></div><ol id="trace-steps"></ol></div>
+ <div id="trace-panel" role="tabpanel" aria-labelledby="trace-tab-monitoring" class="trace-panel">
+  <div class="shared-case-timeline">
+   <h3>One world timeline, three recorded traces</h3>
+   <p>Switch models to compare recorded actions against the same 13:20 alert. Clock markers show event order. The final column lists later steps in the selected trace whose clock times are unspecified.</p>
+   <ol class="case-clock" id="case-clock">
+    <li><time>12:00</time><p data-clock="1200">CityNews lookup returns no alert.</p></li>
+    <li class="clock-world"><time>13:20</time><p>World event · traffic delay adds 12 minutes.</p></li>
+    <li><time>13:30</time><p data-clock="1330">Checks weather only.</p></li>
+    <li><time>14:00</time><p data-clock="1400">No action shown.</p></li>
+    <li><span class="clock-time">Later steps</span><p data-clock="later">Submits feasible: true.</p></li>
+   </ol>
+  </div>
+  <div><span id="trace-kind" class="finding-label">MISSED UPDATE</span><h3 id="trace-title">Checks weather, but does not recheck traffic.</h3><p id="trace-description">After early CityNews queries return no alert, the model advances time and checks weather only. It does not acquire the traffic update that affects the trip.</p><div class="trace-verdict"><span>SUBMITTED DECISION</span><b id="trace-verdict">feasible: true</b><p id="trace-consequence">The answer still uses about 50 minutes against the unchanged 56-minute limit.</p></div></div><ol id="trace-steps"></ol></div>
  <details class="supporting-detail"><summary>Inspect the original six-model case figure <span aria-hidden="true">+</span></summary><figure class="research-figure"><button class="figure-button enlarge" data-image="assets/paper-v3/traffic-case.png" data-caption="Figure 4 · Six models facing the same world change."><img src="assets/paper-v3/traffic-case.png" alt="Original six-model case figure with tool-call steps, the traffic alert, calculations, and submitted feasibility decisions." loading="lazy"><span>Open the complete case figure ↗</span></button><figcaption>Selected model traces above are transcribed from Figure 4. They illustrate different behaviors in this episode, not a model-wide ranking or a claim about all runs.</figcaption></figure></details>
 </section>
 <section id="resources" class="band"><div class="wrap section resources-section"><div><span class="eyebrow">EXPLORE THE RESEARCH</span><h2>Establish decision validity.<br>Then maintain it over time.</h2><p>GeoWorld and LiveGeo provide a verifiable testbed for studying evidence-grounded geographic decisions in changing environments.</p></div><div class="release-links"><div><b>Project</b><p>Project overview, research findings, and resources.</p><a href="https://livegeoworld.github.io/" target="_blank" rel="noopener noreferrer">LiveGeo project page ↗</a></div><div><b>GeoWorld</b><p>The geographic world simulator.</p><a href="https://github.com/LiveGeoWorld/GeoWorld" target="_blank" rel="noopener noreferrer">GeoWorld repository ↗</a></div><div><b>LiveGeo</b><p>The geographic decision-making benchmark.</p><a href="https://github.com/LiveGeoWorld/LiveGeo-benchmark" target="_blank" rel="noopener noreferrer">LiveGeo benchmark ↗</a></div></div></div></section>
