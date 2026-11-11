@@ -848,7 +848,7 @@ document.querySelectorAll('.failure-evidence').forEach(figure => {
     const label = document.createElement('p');
     label.className = 'failure-profile-name';
     const name = document.createElement('span');
-    name.textContent = '(' + String.fromCharCode(97 + index) + ') ' + model + (kind === 'dynamic' && index === 3 ? '*' : '');
+    name.textContent = '(' + String.fromCharCode(97 + index) + ') ' + model;
     label.append(name);
     const canvas = document.createElement('canvas');
     canvas.className = 'failure-profile-chart';
