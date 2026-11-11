@@ -520,7 +520,7 @@ function drawGroundingRing(canvas) {
     ctx.fillStyle = color;
     traceRingSector(ctx, x, y, inner, outer, start, end);
     ctx.fill();
-    ctx.strokeStyle = '#f5f9fd';
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1.4;
     ctx.stroke();
 
@@ -747,7 +747,7 @@ function drawFailureRing(ctx, width, height, values, logo) {
     traceRingSector(ctx, x, y, inner, outer, start, end);
     ctx.fill();
     ctx.lineWidth = 1.15;
-    ctx.strokeStyle = '#f7fbfe';
+    ctx.strokeStyle = '#ffffff';
     ctx.stroke();
 
     if (index !== 0) {
@@ -1032,20 +1032,20 @@ function drawPaperLineChart() {
     ctx.stroke();
   };
 
-  ctx.fillStyle = '#e5effa';
+  ctx.fillStyle = '#f2f2f2';
   ctx.fillRect(x(activePaperStep) - 6, plot.top - 5, x(activePaperStep + 1) - x(activePaperStep) + 12, plot.bottom - plot.top + 5);
   ctx.font = '12px Segoe UI, sans-serif';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   for (let value = 0; value <= 30; value += 5) {
-    ctx.strokeStyle = '#d0deeb';
+    ctx.strokeStyle = '#dedede';
     ctx.lineWidth = 1;
     segment(plot.left, y(value), plot.right, y(value));
-    ctx.fillStyle = '#526b83';
+    ctx.fillStyle = '#4e6268';
     ctx.fillText(String(value), plot.left - 6, y(value));
   }
   for (let index = 0; index < 4; index++) {
-    ctx.strokeStyle = '#d0deeb';
+    ctx.strokeStyle = '#dedede';
     segment(x(index), plot.top, x(index), plot.bottom);
   }
   for (const model of paperLineModels) {

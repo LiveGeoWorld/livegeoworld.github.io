@@ -21,7 +21,7 @@
  </div>
 </div></section>
 <section id="geoworld" class="wrap section method-section">
- <div class="section-heading"><div><span class="eyebrow">02 / GEOWORLD</span><h2>A changing world.<br>A verifiable interaction history.</h2></div><p>GeoWorld separates persistent geographic structure from time-varying states, then aligns each observation and action with the world state at that time.</p></div>
+ <div class="section-heading"><div><span class="eyebrow">02 / GEOWORLD</span><h2>A changing world.<br>A verifiable interaction history.</h2></div></div>
  <figure class="research-figure">
   <button id="geoworld-figure" type="button" class="figure-button enlarge" data-image="assets/paper-v3/architecture.png" data-caption="Figure 2 · GeoWorld architecture.">
    <span class="geoworld-image">
@@ -57,7 +57,6 @@
 <section id="benchmark" class="band"><div class="wrap section">
  <div class="section-heading">
   <div><span class="eyebrow">03 / LIVEGEO</span><h2>A benchmark for geographic<br>decision-making</h2></div>
-  <p>Built on GeoWorld, LiveGeo tests whether agents can make valid geographic decisions and maintain them as traffic, place availability, and user requirements change.</p>
  </div>
  <div id="task-coverage" class="livegeo-task-coverage">
  <div class="taxonomy-paper"><div class="taxonomy-paper-head"><b>Task category</b><b>Decision dependency</b></div><div class="taxonomy-family">Atomic · establish local validity</div><div><b>Grounding</b><p>Resolve visual or textual evidence to the exact geographic entity.</p></div><div><b>Discovery</b><p>Translate intent into destinations satisfying joint spatial, service, and preference requirements.</p></div><div><b>Mobility Planning</b><p>Satisfy journey requirements, including waypoints, dwell times, modes, and deadlines.</p></div><div class="taxonomy-family">Compositional · compose jointly valid decisions</div><div><b>Multi-Entity</b><p>Coordinate location and availability constraints across participants.</p></div><div><b>Long-Horizon</b><p>Preserve downstream feasibility across linked activities and time windows.</p></div><div><b>Safety-Aware</b><p>Ground destination and access-route choices in relevant safety evidence.</p></div><div><b>Region-Aware</b><p>Use regional practices, schedules, and geographic context to constrain valid choices.</p></div><div class="taxonomy-extension"><b>+&nbsp;Dynamic Tasks</b><p>Selected static tasks gain time-stamped events. Agents reassess their earlier decisions when those events change the conditions.</p></div></div>
@@ -141,7 +140,7 @@
  </div>
 </div></section>
 <section id="experiment" class="wrap section results-section">
- <div class="section-heading"><div><span class="eyebrow">04 / EXPERIMENTS</span><h2>Evaluating geographic agents</h2></div><p>We evaluate nine models on LiveGeo to compare geographic decision-making under fixed and changing conditions.</p></div>
+ <div class="section-heading"><div><span class="eyebrow">04 / EXPERIMENTS</span><h2>Evaluating geographic agents</h2></div></div>
  <div class="subsection-title"><h3>Evaluation environment</h3></div>
  <div class="experiment-environment">
   <div><h4>World coverage</h4><dl class="experiment-coverage"><div><dt>Real-world cities</dt><dd>6</dd></div><div><dt>Regions</dt><dd>88</dd></div><div><dt>Points of interest</dt><dd>1,376</dd></div><div><dt>Cached routes</dt><dd>107,372</dd></div></dl></div>
@@ -441,7 +440,10 @@
  <div class="section-heading"><div><span class="eyebrow">06 / CASE STUDY</span><h2>Can this Cape Town trip fit within 56 minutes?</h2></div></div>
  <div class="case-study">
   <div class="case-request">
-   <h3>Task instructions</h3>
+   <div class="case-request-heading">
+    <h3>Task instructions</h3>
+    <span class="case-setting">Task-Only Dynamics</span>
+   </div>
    <p>Help Gamieda Petersen determine whether she can drive from MorganCargo to Dis-Chem Claremont Pharmacy within <strong>56 minutes</strong>, with a mandatory <strong>20-minute meeting</strong> at PEP Cape Town Woodstock. If feasible, provide the route for each leg.</p>
   </div>
   <figure class="case-route">
