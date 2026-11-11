@@ -1,9 +1,29 @@
 'use strict';
-function bindTabs(selector,key,pick){const buttons=[...document.querySelectorAll(selector)];function select(b){buttons.forEach(x=>{x.setAttribute('aria-selected',String(x===b));x.tabIndex=x===b?0:-1;});pick(b.dataset[key]);}buttons.forEach((b,i)=>{b.addEventListener('click',()=>select(b));b.addEventListener('keydown',e=>{let next;if(e.key==='ArrowRight')next=(i+1)%buttons.length;else if(e.key==='ArrowLeft')next=(i-1+buttons.length)%buttons.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=buttons.length-1;else return;e.preventDefault();select(buttons[next]);buttons[next].focus();});});}
+function bindTabs(selector,key,pick){const buttons=[...document.querySelectorAll(selector)];function select(b){buttons.forEach(x=>{x.setAttribute('aria-selected',String(x===b));x.tabIndex=x===b?0:-1;});pick(b.dataset[key]);}buttons.forEach((b,i)=>{b.addEventListener('click',()=>select(b));b.addEventListener('keydown',e=>{let next;if(e.key==='ArrowRight'||(e.key==='ArrowDown'&&b.parentElement.getAttribute('aria-orientation')==='vertical'))next=(i+1)%buttons.length;else if(e.key==='ArrowLeft'||(e.key==='ArrowUp'&&b.parentElement.getAttribute('aria-orientation')==='vertical'))next=(i-1+buttons.length)%buttons.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=buttons.length-1;else return;e.preventDefault();select(buttons[next]);buttons[next].focus();});});}
 let resultData=null;
 function results(setting){if(!resultData)return;const cols=setting==='static'?[0,1,2,3,4,5,6]:[7,9,8];const names=setting==='static'?['Grounding','Discovery','Mobility','Multi-Entity','Long-Horizon','Safety','Region']:['Matched Static','Task-Only','Shared'];const table=document.querySelector('#results-table');table.dataset.setting=setting;document.querySelector('#result-panel').setAttribute('aria-labelledby','result-tab-'+setting);document.querySelector('#result-description').textContent=setting==='static'?'All 1,088 static tasks across seven categories, evaluated under fixed world states.':'The same 149 matched tasks are evaluated in all three columns. Matched Static uses the fixed-world versions of those tasks.';const head=document.createElement('tr');['Model',...names].forEach(t=>{const th=document.createElement('th');th.scope='col';th.textContent=t;head.append(th);});table.tHead.replaceChildren(head);const maxima=cols.map(c=>Math.max(...resultData.rows.map(r=>r.values[c].mean)));const rows=resultData.rows.map(row=>{const tr=document.createElement('tr'),name=document.createElement('th');name.scope='row';name.textContent=row.model;tr.append(name);cols.forEach((c,i)=>{const v=row.values[c],td=document.createElement('td'),mean=document.createElement('span'),se=document.createElement('span');mean.className='mean';mean.textContent=v.mean.toFixed(1);se.className='se';se.textContent=' ± '+v.se.toFixed(1);if(v.mean===maxima[i])td.classList.add('best');td.append(mean,se);tr.append(td);});return tr;});table.tBodies[0].replaceChildren(...rows);}
 window.resultsReady=fetch('assets/paper-v3/results.json').then(r=>{if(!r.ok)throw Error('Result data unavailable');return r.json();}).then(data=>{if(data.rows.length!==9||data.rows.some(r=>r.values.length!==10))throw Error('Invalid result data');resultData=data;results('static');return true;}).catch(e=>{document.querySelector('#result-description').textContent='The results table could not load. Please refresh the page.';throw e;});
 bindTabs('[data-results]','results',results);
+
+// The results table sits above Finding 1 and expands when its data arrives.
+const q1QuestionLink = document.querySelector('#problem a[href="#finding-q1"]');
+function followQ1AfterResults(event) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  const previousHash = location.hash;
+  function followLink() {
+    if (location.hash !== previousHash) return;
+    if (location.hash === q1QuestionLink.hash) document.querySelector(q1QuestionLink.hash).scrollIntoView();
+    else location.hash = q1QuestionLink.hash;
+  }
+  window.resultsReady.then(followLink, followLink);
+}
+q1QuestionLink.addEventListener('click', followQ1AfterResults);
+function restoreQ1Link() {
+  q1QuestionLink.removeEventListener('click', followQ1AfterResults);
+}
+window.resultsReady.then(restoreQ1Link, restoreQ1Link);
+
 
 const successTask = document.querySelector('#success-task');
 const successRules = document.querySelectorAll('[data-success-rule]');
@@ -50,75 +70,11 @@ for (const control of geoworldControls) {
   });
 }
 
-const modelSelectors = ['a', 'b'].map(key => document.querySelector('#comparison-model-' + key));
-const comparisonBars = document.querySelector('#comparison-bars');
-const comparisonColumns = [[7, 'Static', 'static'], [9, 'Task-Only', 'taskonly'], [8, 'Shared', 'shared']];
-
-function renderModelComparison() {
-  const panels = modelSelectors.map(select => {
-    const model = resultData.rows[Number(select.value)];
-    const panel = document.createElement('div');
-    const title = document.createElement('strong');
-    title.textContent = model.model;
-    panel.append(title);
-    for (const [column, label, color] of comparisonColumns) {
-      const row = document.createElement('div');
-      row.className = 'bar-row';
-      const name = document.createElement('span');
-      name.textContent = label;
-      const track = document.createElement('div');
-      track.setAttribute('aria-hidden', 'true');
-      const bar = document.createElement('i');
-      bar.className = color;
-      const rate = model.values[column].mean;
-      bar.style.width = (rate / 30 * 100) + '%';
-      track.append(bar);
-      const value = document.createElement('b');
-      value.textContent = rate.toFixed(1) + '%';
-      row.append(name, track, value);
-      panel.append(row);
-    }
-    return panel;
-  });
-  comparisonBars.replaceChildren(...panels);
-}
-
-window.resultsReady.then(() => {
-  const defaults = ['Claude Sonnet 5', 'Gemini 3.7 Flash'];
-  modelSelectors.forEach((select, index) => {
-    select.replaceChildren(...resultData.rows.map((row, i) => new Option(row.model, i)));
-    select.value = resultData.rows.findIndex(row => row.model === defaults[index]);
-    select.disabled = false;
-    select.addEventListener('change', renderModelComparison);
-  });
-  renderModelComparison();
-}).catch(() => {
-  comparisonBars.textContent = 'Model comparison data could not load.';
-});
-
-const contrastPanel = document.querySelector('#contrast-panel');
-const contrastChart = document.querySelector('#condition-compare');
-const contrasts = {
-  provided: ['Static → Explicit Update · −5.6 pp', 'Task-relevant conditions change, and the agent receives every necessary update directly. Success still falls below Static.', [0, 1]],
-  discover: ['Explicit Update → Task-Only · −9.1 pp', 'Agents now need to discover the relevant updates through tools. This is the largest adjacent drop in this three-model comparison.', [1, 2]],
-  filter: ['Task-Only → Shared · −1.8 pp', 'Unrelated world events coexist with the relevant changes. The agent also has to identify which updates affect the task.', [2, 3]]
-};
-function showContrast(key) {
-  const [heading, explanation, selected] = contrasts[key];
-  contrastPanel.setAttribute('aria-labelledby', 'contrast-tab-' + key);
-  contrastPanel.querySelector('strong').textContent = heading;
-  contrastPanel.querySelector('p').textContent = explanation;
-  contrastChart.querySelectorAll('.bar-row').forEach((row, index) => {
-    row.classList.toggle('contrast-active', selected.includes(index));
-  });
-}
-bindTabs('[data-contrast]', 'contrast', showContrast);
-showContrast('provided');
-
 const replayPanel = document.querySelector('#replay-panel');
 const replayMap = replayPanel.querySelector('.replay-map-frame');
 const routeCanvas = replayMap.querySelector('canvas');
-const routeContext = routeCanvas.getContext('2d');
+const caseRouteMap = document.querySelector('#case-route-map');
+const caseRouteCanvas = caseRouteMap.querySelector('canvas');
 const mapZoom = 13;
 const tileSize = 256;
 
@@ -214,28 +170,29 @@ const secondDrive = [
   [-33.97698,18.46472], [-33.97707,18.46477], [-33.97725,18.46473], [-33.97827,18.46485], [-33.98038,18.46513],
 ];
 
-for (const pin of replayMap.querySelectorAll('[data-map-point]')) {
-  const [x, y] = mapPosition(mapPoints[pin.dataset.mapPoint]);
-  pin.style.left = 100 * x / routeCanvas.width + '%';
-  pin.style.top = 100 * y / routeCanvas.height + '%';
-}
-
 // Use one unobstructed segment on each leg, in route order.
 const directionSegments = [
   [firstDrive, 18.57789],
   [secondDrive, 18.45986],
 ];
-for (const [index, [drive, longitude]] of directionSegments.entries()) {
-  const start = drive.findIndex(point => point[1] === longitude);
-  const [x1, y1] = mapPosition(drive[start]);
-  const [x2, y2] = mapPosition(drive[start + 1]);
-  const arrow = replayMap.querySelector('[data-replay-leg="' + (index + 1) + '"]');
-  arrow.style.left = 50 * (x1 + x2) / routeCanvas.width + '%';
-  arrow.style.top = 50 * (y1 + y2) / routeCanvas.height + '%';
-  arrow.style.setProperty('--direction', Math.atan2(y2 - y1, x2 - x1) + 'rad');
+for (const map of [replayMap, caseRouteMap]) {
+  for (const pin of map.querySelectorAll('[data-map-point]')) {
+    const [x, y] = mapPosition(mapPoints[pin.dataset.mapPoint]);
+    pin.style.left = 100 * x / routeCanvas.width + '%';
+    pin.style.top = 100 * y / routeCanvas.height + '%';
+  }
+  for (const [index, [drive, longitude]] of directionSegments.entries()) {
+    const start = drive.findIndex(point => point[1] === longitude);
+    const [x1, y1] = mapPosition(drive[start]);
+    const [x2, y2] = mapPosition(drive[start + 1]);
+    const arrow = map.querySelector('[data-replay-leg="' + (index + 1) + '"]');
+    arrow.style.left = 50 * (x1 + x2) / routeCanvas.width + '%';
+    arrow.style.top = 50 * (y1 + y2) / routeCanvas.height + '%';
+    arrow.style.setProperty('--direction', Math.atan2(y2 - y1, x2 - x1) + 'rad');
+  }
 }
 
-function drawDrive(points, color) {
+function drawDrive(routeContext, points, color) {
   routeContext.beginPath();
   for (const [index, coordinates] of points.entries()) {
     const [x, y] = mapPosition(coordinates);
@@ -254,6 +211,14 @@ function drawDrive(points, color) {
   routeContext.stroke();
 }
 
+function paintRoute(canvas, hasTraffic) {
+  const context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  drawDrive(context, firstDrive, '#245e93');
+  drawDrive(context, secondDrive, '#245e93');
+  if (hasTraffic) drawDrive(context, affectedN2, '#ac461e');
+}
+
 function showReplay(setting) {
   const hasTraffic = setting !== 'static';
   replayPanel.dataset.setting = setting;
@@ -265,43 +230,890 @@ function showReplay(setting) {
   replayPanel.querySelector('[data-replay-outcome]').textContent = hasTraffic ? '5 min 22 s over the 56-minute limit.' : 'Within the 56-minute limit.';
   replayPanel.querySelector('.replay-delay').hidden = !hasTraffic;
   replayPanel.querySelector('[data-replay-meter-label]').textContent = (hasTraffic ? '61:22' : '49:22') + ' / 56:00 limit';
-  routeContext.clearRect(0, 0, routeCanvas.width, routeCanvas.height);
-  drawDrive(firstDrive, '#245e93');
-  drawDrive(secondDrive, '#245e93');
-  if (hasTraffic) drawDrive(affectedN2, '#ac461e');
+  paintRoute(routeCanvas, hasTraffic);
 }
 bindTabs('[data-replay]', 'replay', showReplay);
 showReplay('static');
 
-const coveragePanel = document.querySelector('#coverage-panel');
-// Figure 9 uses all runs for observation and the observed subset for correctness.
-const maintenanceRates = { taskonly: ['14.1%', '43.1%'], shared: ['11.8%', '39.9%'] };
-bindTabs('[data-coverage]', 'coverage', setting => {
-  const [observed, correct] = maintenanceRates[setting];
-  coveragePanel.setAttribute('aria-labelledby', 'coverage-tab-' + setting);
-  coveragePanel.querySelector('[data-coverage-observed]').textContent = observed;
-  coveragePanel.querySelector('[data-coverage-correct]').textContent = correct;
-});
-bindTabs('[data-analysis]','analysis',key=>{document.querySelector('#maintenance-panel').setAttribute('aria-labelledby','analysis-tab-'+key);for(const k of ['monitoring','grounding'])document.querySelector('#maintenance-'+k).hidden=k!==key;});
-const traces={
- monitoring:{kind:'MISSED UPDATE',title:'Checks weather, but does not recheck traffic.',description:'After early CityNews queries return no alert, the model advances time and checks weather only. It does not acquire the traffic update that affects the trip.',verdict:'feasible: true',consequence:'The answer still uses about 50 minutes against the unchanged 56-minute limit.',outcome:'incorrect',steps:[['Steps 13–14 · 12:00','CityNews lookup fails, then returns an empty result. The traffic alert has not yet been published.'],['Step 16 · 13:30','Checks weather only. There is no weather alert; traffic news is not rechecked.'],['Step 17 · final','Submits a feasible trip using the earlier timing, without the 12-minute delay.']]},
- revision:{kind:'UPDATE APPLIED',title:'Reads the delay and revises the decision.',description:'The model obtains the relevant traffic notice and incorporates it while preserving the mandatory meeting and the original time limit.',verdict:'feasible: false',consequence:'The traffic-adjusted total exceeds 56 minutes, so the original trip is correctly rejected.',outcome:'correct',steps:[['Step 15 · 14:00','CityNews notice history returns the N2 collision alert: add 12 minutes.'],['Step 18 · recalculation','49 min 22 s + 12 min = 61 min 22 s > 56 min. The 20-minute meeting is retained.'],['Final decision','Reports the traffic alert and submits an infeasible trip judgment.']]},
- inertia:{kind:'CONFLICTING COMMITMENT',title:'The explanation changes; the submitted judgment does not.',description:'The model reads the update and computes that the trip exceeds the deadline. Its final structured decision nevertheless contradicts that calculation.',verdict:'feasible: true',consequence:'The committed judgment conflicts with its own updated calculation and written conclusion.',outcome:'incorrect',steps:[['Step 22 · 13:30','Queries CityNews for PEP Woodstock and receives the 12-minute delay.'],['Step 23 · explanation','Using rounded leg times, computes 62 > 56 minutes and says the trip cannot finish in time.'],['Submitted decision','Still commits feasible: true, despite recognizing that the updated trip is too long.']]}
+// Recorded steps shown in Figure 4. Untimed steps stay in the last column.
+const caseTraces = {
+  monitoring: {
+    title: 'Misses the traffic update',
+    verdict: true,
+    consequence: 'The submission still uses about 50 minutes and leaves out the delay.',
+    steps: [
+      ['1200', 'Steps 13–14 · 12:00', 'Looks up CityNews', 'The first lookup fails. The next returns no alert because the traffic update has yet to be published.'],
+      ['1330', 'Step 16 · 13:30', 'Checks weather only', 'The weather check finds no alert. The agent does not recheck traffic news.'],
+      ['later', 'Step 17 · Final submission', 'Keeps the original judgment', 'The agent submits a feasible trip using its earlier estimate.'],
+    ],
+  },
+  revision: {
+    title: 'Finds the delay and revises the decision',
+    verdict: false,
+    consequence: 'The agent reports the alert and rejects the trip after including the delay.',
+    steps: [
+      ['1400', 'Step 15 · 14:00', 'Finds the alert in CityNews', 'The notice history returns the N2 collision and the 12-minute delay.'],
+      ['later', 'Step 18 · Recalculation', 'Adds 12 minutes to the first drive', 'The new total is 61:22. The 20-minute meeting stays in the itinerary.'],
+      ['later', 'Final submission', 'Changes the trip to infeasible', 'The revised trip exceeds the same 56-minute limit.'],
+    ],
+  },
+  inertia: {
+    title: 'Recalculates the trip but submits the old judgment',
+    verdict: true,
+    consequence: 'The submitted field conflicts with the agent’s written conclusion.',
+    steps: [
+      ['1330', 'Step 22 · 13:30', 'Finds the alert in CityNews', 'A CityNews query for PEP Woodstock returns the 12-minute delay.'],
+      ['later', 'Step 23 · Written explanation', 'Recognizes that the trip exceeds the limit', 'With rounded leg times, the agent calculates 62 minutes and says the trip cannot finish within 56 minutes.'],
+      ['later', 'Final submission', 'Still submits feasible: true', 'The structured judgment keeps the original answer.'],
+    ],
+  },
+  kimi: {
+    title: 'Rechecks base routes and misses the traffic alert',
+    verdict: true,
+    consequence: 'The model never queries CityNews and submits the unchanged 49:22 estimate.',
+    steps: [
+      ['1400', 'Steps 14–15 · 14:00', 'Rechecks the routes in MapApp', 'MapApp still returns the base driving times of 17:38 and 11:44.'],
+      ['later', 'Step 16 · Final submission', 'Treats the base times as current', 'The model judges the trip feasible using 49:22, without accounting for the traffic delay.'],
+    ],
+  },
+  'gemini-pro': {
+    title: 'Rechecks CityNews after the alert',
+    verdict: false,
+    consequence: 'The updated estimate is 61:22, above the 56-minute limit.',
+    steps: [
+      ['1200', 'Step 15 · 12:00', 'Checks CityNews before the alert', 'The notice history is empty at 12:00.'],
+      ['1400', 'Step 19 · 14:00', 'Rechecks CityNews and finds the alert', 'The same notice history now returns the N2 collision and the 12-minute delay.'],
+      ['later', 'Step 20 · Final submission', 'Updates the feasibility judgment', 'The model adds the delay to the original estimate and submits the trip as infeasible.'],
+    ],
+  },
+  grok: {
+    title: 'Finds the delay and checks alternatives',
+    verdict: false,
+    consequence: 'The model combines the base driving times with the alert and judges the trip infeasible.',
+    steps: [
+      ['1330', 'Step 32 · 13:30', 'Finds the Woodstock traffic alert', 'CityNews returns a 12-minute delay on the affected N2 leg.'],
+      ['later', 'Steps 35–36 · Route checks', 'Looks for a faster route', 'MapApp returns driving routes and indicates that transit is unavailable. The checks return no faster option.'],
+      ['later', 'Step 37 · Final submission', 'Submits the trip as infeasible', 'The model includes the delay and determines that the trip exceeds the 56-minute limit.'],
+    ],
+  },
 };
-function trace(key){const c=traces[key];for(const k of ['kind','title','description','verdict','consequence'])document.querySelector('#trace-'+k).textContent=c[k];const panel=document.querySelector('#trace-panel');panel.setAttribute('aria-labelledby','trace-tab-'+key);panel.dataset.outcome=c.outcome;document.querySelector('#trace-steps').replaceChildren(...c.steps.map(([title,description])=>{const li=document.createElement('li'),s=document.createElement('span'),p=document.createElement('p');s.textContent=title;p.textContent=description;li.append(s,p);return li;}));}
-const clockActions = {
-  monitoring: { '1200': 'Steps 13–14 · CityNews lookup returns no alert.', '1330': 'Step 16 · Checks weather only.', later: 'Step 17 · Submits feasible: true.' },
-  revision: { '1400': 'Step 15 · CityNews returns the traffic delay.', later: 'Step 18 · Recalculates 61:22. Final decision: feasible: false.' },
-  inertia: { '1330': 'Step 22 · CityNews returns the traffic delay.', later: 'Step 23 · Explains the overrun. Final decision: feasible: true.' }
-};
+
+const casePanel = document.querySelector('#trace-panel');
+const caseClock = [...casePanel.querySelectorAll('[data-case-time]')];
+const caseWorldControls = [...document.querySelectorAll('[data-case-world]')];
+const caseMapState = document.querySelector('#case-map-state');
+const caseTrafficPin = caseRouteMap.querySelector('[data-map-point="traffic"]');
+let selectedCaseTime = '1320';
+
+function showCaseTime(time, hasTraffic = time !== '1200') {
+  selectedCaseTime = time;
+  const phase = hasTraffic ? 'after' : 'before';
+  caseRouteMap.dataset.phase = phase;
+  caseMapState.textContent = hasTraffic ? 'After the 13:20 alert' : 'Before the 13:20 alert';
+  caseTrafficPin.hidden = !hasTraffic;
+  caseWorldControls.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.caseWorld === phase)));
+  caseClock.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.caseTime === time)));
+  casePanel.querySelectorAll('[data-case-step]').forEach(step => {
+    step.classList.toggle('case-step-focus', step.dataset.caseStep === time);
+  });
+  paintRoute(caseRouteCanvas, hasTraffic);
+}
+
 function showCaseTrace(key) {
-  trace(key);
-  document.querySelectorAll('[data-clock]').forEach(point => {
-    const action = clockActions[key][point.dataset.clock];
-    point.textContent = action || 'No action shown.';
-    point.closest('li').classList.toggle('clock-active', Boolean(action));
+  const trace = caseTraces[key];
+  casePanel.setAttribute('aria-labelledby', 'trace-tab-' + key);
+  casePanel.dataset.outcome = trace.verdict ? 'incorrect' : 'correct';
+  document.querySelector('#trace-title').textContent = trace.title;
+  document.querySelector('#trace-verdict').textContent = 'feasible: ' + trace.verdict;
+  document.querySelector('#trace-correctness').textContent = trace.verdict ? 'Incorrect' : 'Correct';
+  document.querySelector('#trace-consequence').textContent = trace.consequence;
+
+  const steps = trace.steps.map(([time, meta, title, detail]) => {
+    const item = document.createElement('li');
+    item.dataset.caseStep = time;
+    const label = document.createElement('span');
+    label.textContent = meta;
+    const heading = document.createElement('b');
+    heading.textContent = title;
+    const body = document.createElement('p');
+    body.textContent = detail;
+    item.append(label, heading, body);
+    return item;
+  });
+  document.querySelector('#trace-steps').replaceChildren(...steps);
+
+  for (const button of caseClock) {
+    const time = button.dataset.caseTime;
+    if (time === '1320') continue;
+    const matches = trace.steps.filter(([stage]) => stage === time);
+    button.disabled = matches.length === 0;
+    button.querySelector('small').textContent = matches.at(-1)?.[2] ?? 'No step shown';
+  }
+  const isAvailable = caseClock.some(button => button.dataset.caseTime === selectedCaseTime && !button.disabled);
+  showCaseTime(isAvailable ? selectedCaseTime : '1320');
+}
+
+for (const button of caseClock) {
+  button.addEventListener('click', () => showCaseTime(button.dataset.caseTime));
+}
+for (const button of caseWorldControls) {
+  button.addEventListener('click', () => {
+    const before = button.dataset.caseWorld === 'before';
+    const hasEarlyStep = caseClock.some(node => node.dataset.caseTime === '1200' && !node.disabled);
+    showCaseTime(before && hasEarlyStep ? '1200' : before ? '' : '1320', !before);
   });
 }
 bindTabs('[data-trace]', 'trace', showCaseTrace);
 showCaseTrace('monitoring');
+
 const dialog=document.querySelector('#image-dialog');document.querySelectorAll('.enlarge').forEach(b=>b.addEventListener('click',()=>{const image=document.querySelector('#dialog-image');image.src=b.dataset.image;image.alt=b.dataset.caption;document.querySelector('#dialog-caption').textContent=b.dataset.caption;dialog.showModal();}));
+
+
+// Figure 8. Error-bar endpoints read from the vector figure on its percentage axes.
+const checkingSettings = ['Task-Only', 'Shared'];
+const postChangeSeries = checkingSettings.map((label, index) => [label, ['#d6b95d', '#6c805e'][index]]);
+const coverageSeries = checkingSettings.map((label, index) => [label, ['#bd8675', '#80b3cf'][index]]);
+const queryCoverage = {
+  total: [
+    ['0', [0, 0]],
+    ['1–5', [5.3, 4.6], [[1.79, 9.42], [0.96, 9.21]]],
+    ['6–10', [16.0, 12.5], [[10.32, 22.08], [7.47, 18.36]]],
+    ['11–15', [25.3, 26.9], [[18.03, 32.97], [19.54, 34.13]]],
+    ['16–20', [29.0, 24.2], [[20.42, 37.92], [17.63, 30.65]], 'volume'],
+    ['≥21', [20.6, 18.0], [[16.52, 25.43], [14.25, 22.32]], 'volume'],
+  ],
+  targeted: [
+    ['0', [7.5, 7.2], [[5.34, 10.0], [5.11, 9.47]], 'focused'],
+    ['1', [85.7, 81.3], [[77.87, 92.19], [73.42, 88.48]], 'focused'],
+    ['≥2', [95.4, 90.5], [[88.49, 100.0], [82.74, 97.73]]],
+  ],
+};
+
+// Figure 9(a). Columns follow the four outcomes in the paper's legend.
+const observationSeries = [
+  ['Observed all necessary events', '#087ca7'],
+  ['Reported events correctly', '#66b5d1'],
+  ['Final decision correct', '#dca21d'],
+  ['Overall success', '#465561'],
+];
+const observationOutcomes = [
+  ['DeepSeek V4 Flash Vision Exp', [13.4, 8.1, 6.7, 3.4], [9.4, 3.4, 5.4, 1.3]],
+  ['Kimi K3', [4.7, 4.0, 4.0, 2.7], [2.7, 2.7, 2.7, 2.0]],
+  ['Qwen3.8-Max', [8.7, 6.0, 9.4, 4.7], [6.7, 4.7, 8.7, 4.0]],
+  ['Grok 4.5', [31.5, 18.1, 12.1, 10.1], [27.5, 17.4, 8.7, 6.7]],
+  ['Gemini 3.7 Flash', [38.9, 32.9, 17.4, 14.1], [37.6, 28.9, 16.1, 13.4]],
+  ['Gemini 3.1 Pro Preview', [10.4, 9.6, 10.4, 6.7], [10.3, 8.1, 6.6, 3.7]],
+  ['Claude Sonnet 5', [6.7, 6.0, 6.7, 2.7], [6.0, 5.4, 6.7, 2.0]],
+  ['Claude Opus 5', [8.1, 7.4, 10.1, 4.7], [4.0, 4.0, 6.0, 1.3]],
+  ['GPT-5.6 Sol', [4.7, 4.0, 6.0, 2.7], [2.0, 2.0, 6.0, 1.3]],
+];
+
+// Figure 9(b). Display the printed percentages. Normalize only the arc geometry.
+const groundingSeries = [
+  ['Both correct', '#624c91'],
+  ['Event correct only', '#bb7142'],
+  ['Decision correct only', '#5c9e9b'],
+  ['Neither correct', '#8492a8'],
+];
+const groundingValues = [[40.3, 36.4, 2.8, 20.5], [35.3, 38.6, 4.6, 21.6]];
+const maintenanceClaims = {
+  targeted: 'Of runs that reached a necessary event, 20.6% in Task-Only and 18.0% in Shared queried the affected information after the change.',
+  stale: 'Of runs that had already checked the affected information, 31.1% in Task-Only and 33.6% in Shared never checked it again.',
+  volume: 'Mean coverage stays below 30% in every total-query group. In both settings, runs with at least 21 queries observe fewer necessary events on average than runs with 16–20.',
+  focused: 'Mean coverage rises from 7.5% to 85.7% in Task-Only and from 7.2% to 81.3% in Shared when comparing runs with zero and one targeted query after a necessary event.',
+  observe: 'In Task-Only, 38.9% of Gemini 3.7 Flash runs observe every necessary event, compared with 6.7% for Claude Sonnet 5. In Shared, the shares are 37.6% and 6.0%.',
+  correct: 'Among runs observing every necessary event, 43.1% in Task-Only and 39.9% in Shared decide correctly, combining the “Both correct” and “Decision correct only” sectors.',
+  report: 'Among runs observing every necessary event, 36.4% in Task-Only and 38.6% in Shared report the events correctly but decide incorrectly.',
+};
+
+function maintenanceLegend(series) {
+  return '<ul class="maintenance-legend">' + series.map(([label, color]) =>
+    '<li><i aria-hidden="true" style="--series-color:' + color + '"></i>' + label + '</li>').join('') + '</ul>';
+}
+
+function renderMaintenanceBars(id, { title, unit, scale, series, rows, labelWidth, compact = false, legend = false }) {
+  const ticks = Array.from({ length: 5 }, (_, index) => scale * index / 4);
+  const axis = ticks.map(tick => '<span style="--tick:' + (100 * tick / scale) + '%">' + tick + '</span>').join('');
+  const groups = rows.map(([name, values, errors, focus = '']) => {
+    const bars = values.map((value, index) => {
+      const [label, color] = series[index];
+      const range = errors?.[index];
+      const error = range ? '<i class="maintenance-error" style="--error-left:' + (100 * range[0] / scale) +
+        '%;--error-width:' + (100 * (range[1] - range[0]) / scale) + '%"></i>' : '';
+      const end = Math.max(value, range?.[1] ?? 0);
+      const accessibleName = name + ', ' + label + ': ' + value.toFixed(1) + '%';
+      return '<div class="maintenance-bar" role="img" aria-label="' + accessibleName + '" title="' + accessibleName +
+        '" data-chart-focus="' + (compact && index !== 0 ? '' : focus) +
+        '" style="--series-color:' + color + ';--bar-width:' + (100 * value / scale) + '%;--value-left:' + (100 * end / scale) + '%">' +
+        '<i class="maintenance-bar-fill"></i>' + error + '<b class="maintenance-value">' + value.toFixed(1) + '</b></div>';
+    }).join('');
+    return '<div class="maintenance-bar-group"><span class="maintenance-row-label" data-chart-focus="' + focus + '">' +
+      name + '</span><div class="maintenance-plot">' + bars + '</div></div>';
+  }).join('');
+  const target = document.getElementById(id);
+  target.className = 'maintenance-bar-chart' + (compact ? ' maintenance-bar-chart-compact' : '');
+  target.style.setProperty('--chart-label', labelWidth);
+  target.innerHTML = '<p class="maintenance-plot-title">' + title + '</p>' +
+    '<p class="maintenance-unit">' + unit + '</p><div class="maintenance-axis" aria-hidden="true">' + axis + '</div>' +
+    '<div class="maintenance-bar-groups">' + groups + '</div>' + (legend ? maintenanceLegend(series) : '');
+}
+
+renderMaintenanceBars('checking-rates', {
+  title: 'Post-change checking', unit: 'Eligible runs (%)', scale: 40,
+  series: postChangeSeries, labelWidth: '5.45rem', legend: true,
+  rows: [['Targeted query', [20.6, 18.0], null, 'targeted'], ['No recheck', [31.1, 33.6], null, 'stale']],
+});
+renderMaintenanceBars('total-query-coverage', {
+  title: 'Total queries per run', unit: 'Mean event coverage (%)', scale: 40,
+  series: coverageSeries, rows: queryCoverage.total, labelWidth: '2.4rem', legend: true,
+});
+renderMaintenanceBars('targeted-query-coverage', {
+  title: 'Post-event targeted queries', unit: 'Mean event coverage (%)', scale: 100,
+  series: coverageSeries, rows: queryCoverage.targeted, labelWidth: '1.7rem', legend: true,
+});
+['task-only-outcomes', 'shared-outcomes'].forEach((id, setting) => {
+  const rows = observationOutcomes.map(([model, taskOnly, shared]) => {
+    const focus = model === 'Gemini 3.7 Flash' || model === 'Claude Sonnet 5' ? 'observe' : '';
+    return [model, setting === 0 ? taskOnly : shared, null, focus];
+  });
+  renderMaintenanceBars(id, {
+    title: checkingSettings[setting] + ' Dynamics', unit: 'Share of runs (%)', scale: 40,
+    series: observationSeries, rows, labelWidth: '7.2rem', compact: true,
+  });
+});
+document.querySelector('#observation-legend').innerHTML = maintenanceLegend(observationSeries);
+document.querySelector('#grounding-legend').innerHTML = maintenanceLegend(groundingSeries);
+
+const groundingCanvases = document.querySelectorAll('.grounding-ring');
+
+function traceRingSector(ctx, x, y, inner, outer, start, end) {
+  ctx.beginPath();
+  ctx.arc(x, y, outer, start, end);
+  ctx.arc(x, y, inner, end, start, true);
+  ctx.closePath();
+}
+
+function drawGroundingRing(canvas) {
+  const { width, height } = canvas.getBoundingClientRect();
+  if (!width || !height) return;
+  const setting = Number(canvas.dataset.groundingSetting);
+  const values = groundingValues[setting];
+  const claim = canvas.closest('figure').dataset.activeClaim;
+  const active = claim === 'report' ? [1] : claim === 'correct' ? [0, 2] : [];
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(ratio, ratio);
+  const x = width / 2;
+  const y = height / 2;
+  const outer = Math.min((width - 98) / 2, height * .39);
+  const inner = outer * .68;
+  const total = values.reduce((sum, value) => sum + value, 0);
+  let start = -Math.PI / 2;
+
+  values.forEach((value, index) => {
+    const end = start + value / total * Math.PI * 2;
+    const [, color] = groundingSeries[index];
+    const emphasized = active.includes(index);
+    ctx.globalAlpha = claim ? (emphasized ? 1 : .34) : 1;
+    ctx.fillStyle = color;
+    traceRingSector(ctx, x, y, inner, outer, start, end);
+    ctx.fill();
+    ctx.strokeStyle = '#f5f9fd';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+
+    const middle = (start + end) / 2;
+    const dx = Math.cos(middle);
+    const dy = Math.sin(middle);
+    const right = dx >= 0;
+    const elbowX = x + dx * (outer + 8);
+    const elbowY = y + dy * (outer + 8);
+    const endX = right ? width - 49 : 49;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = emphasized ? 1.6 : 1;
+    ctx.beginPath();
+    ctx.moveTo(x + dx * outer, y + dy * outer);
+    ctx.lineTo(elbowX, elbowY);
+    ctx.lineTo(endX, elbowY);
+    ctx.stroke();
+    ctx.fillStyle = '#223a50';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = right ? 'left' : 'right';
+    ctx.font = (emphasized ? '750 ' : '650 ') + '14px Segoe UI, sans-serif';
+    ctx.fillText(value.toFixed(1) + '%', endX + (right ? 3 : -3), elbowY);
+    start = end;
+  });
+
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#223a50';
+  ctx.textAlign = 'center';
+  ctx.font = '700 15px Segoe UI, sans-serif';
+  ctx.fillText(checkingSettings[setting], x, y);
+  canvas.setAttribute('aria-label', checkingSettings[setting] + ' Dynamics. ' + values.map((value, index) =>
+    groundingSeries[index][0] + ' ' + value.toFixed(1) + '%').join('. '));
+}
+
+const groundingObserver = new ResizeObserver(entries => entries.forEach(({ target }) => drawGroundingRing(target)));
+groundingCanvases.forEach(canvas => groundingObserver.observe(canvas));
+document.querySelectorAll('.maintenance-evidence').forEach(figure => {
+  const buttons = figure.querySelectorAll('[data-maintenance-claim]');
+  const marks = figure.querySelectorAll('[data-chart-focus]');
+  const note = figure.querySelector('.maintenance-evidence-note');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const claim = button.getAttribute('aria-pressed') === 'true' ? '' : button.dataset.maintenanceClaim;
+    figure.dataset.activeClaim = claim;
+    buttons.forEach(choice => choice.setAttribute('aria-pressed', String(Boolean(claim) && choice === button)));
+    marks.forEach(mark => {
+      const focused = Boolean(claim) && mark.dataset.chartFocus === claim;
+      mark.classList.toggle('is-focused', focused);
+      mark.classList.toggle('is-muted', Boolean(claim) && !focused);
+    });
+    note.textContent = maintenanceClaims[claim] ?? '';
+    const rings = figure.querySelectorAll('.grounding-ring');
+    rings.forEach(drawGroundingRing);
+    const firstFocus = figure.querySelector('.is-focused');
+    const target = firstFocus?.closest('.maintenance-bar-chart') ?? rings[0];
+    if (claim && target && window.matchMedia('(max-width: 640px)').matches && target.getBoundingClientRect().top > window.innerHeight - 140) {
+      target.scrollIntoView({ block: 'start' });
+    }
+  }));
+});
+
+
+// Figures 10 and 11. Each row follows the category order in the corresponding legend.
+const failureRadarSeries = [
+  ['Landmark bias', '#b28520'],
+  ['Spatial reasoning failure', '#29699d'],
+  ['Visual perception failure', '#409174'],
+  ['Intent-to-search failure', '#ba631e'],
+  ['Discriminative verification failure', '#9d6297'],
+  ['Evidence integration failure', '#619ab8'],
+  ['Evidence hallucination', '#646d78'],
+];
+const failureRingSeries = [
+  ['Change monitoring failure', '#466f87'],
+  ['Task-relevance confusion', '#c8a455'],
+  ['Event applicability misjudgment', '#78a08e'],
+  ['Decision inertia', '#9987b1'],
+  ['Constraint-preserving replanning failure', '#c98177'],
+];
+const failureProfiles = [
+  ['GPT-5.6 Sol', [1.3, 4.9, 4.0, 24.3, 18.2, 9.8, 37.5], [95.4, 0.4, 0.0, 2.3, 1.9]],
+  ['Claude Opus 5', [1.7, 10.1, 4.0, 27.2, 13.8, 9.7, 33.6], [86.4, 1.3, 3.8, 6.0, 2.6]],
+  ['Claude Sonnet 5', [2.0, 11.2, 3.3, 29.8, 14.2, 9.8, 29.6], [85.3, 2.9, 4.2, 3.8, 3.8]],
+  ['Gemini 3.1 Pro Preview', [0.4, 11.6, 7.2, 17.9, 24.6, 8.5, 29.8], [83.0, 2.0, 1.0, 4.0, 10.0]],
+  ['Gemini 3.7 Flash', [0.8, 9.8, 4.6, 14.5, 28.2, 9.5, 32.6], [38.6, 16.6, 3.4, 13.8, 27.6]],
+  ['Grok 4.5', [1.5, 11.3, 10.3, 20.4, 13.6, 10.5, 32.5], [61.4, 10.2, 3.9, 6.3, 18.1]],
+  ['Qwen3.8-Max', [1.2, 16.5, 6.6, 23.3, 10.4, 8.7, 33.2], [86.9, 3.3, 3.9, 2.6, 3.3]],
+  ['Kimi K3', [2.1, 8.1, 5.7, 11.4, 9.9, 6.3, 56.4], [86.6, 3.0, 3.0, 4.5, 3.0]],
+  ['DeepSeek V4 Flash Vision Exp', [0.3, 12.7, 5.5, 16.6, 13.8, 5.6, 45.5], [68.1, 12.8, 4.3, 6.4, 8.5]],
+  ['All models', [1.3, 10.6, 5.7, 20.4, 16.1, 8.7, 37.3], [79.4, 4.9, 3.0, 5.2, 7.6]],
+];
+const failureLogoNames = ['gpt', 'opus', 'sonnet', 'gemini-pro', 'gemini-flash', 'grok', 'qwen', 'kimi', 'deepseek'];
+const failureClaims = {
+  evidence: {
+    note: 'Across all models, intent-to-search, discriminative verification, evidence integration, and evidence hallucination account for 82.5% of attributed static failures.',
+    axes: { 'All models': [3, 4, 5, 6] },
+  },
+  profiles: {
+    note: 'For Claude Sonnet 5, intent-to-search failures (29.8%) and evidence hallucinations (29.6%) are nearly equal. For Gemini 3.7 Flash, discriminative verification accounts for 28.2% of static attributions.',
+    axes: { 'Claude Sonnet 5': [3, 6], 'Gemini 3.7 Flash': [4] },
+  },
+};
+
+function drawFailureMarker(ctx, index, x, y, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = failureRadarSeries[index][1];
+  if (index === 4 || index === 6) {
+    if (index === 6) ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-size, -size * .29, size * 2, size * .58);
+    ctx.fillRect(-size * .29, -size, size * .58, size * 2);
+  } else {
+    const [sides, start, scale] = [
+      [10, -Math.PI / 2, 1.12], [4, Math.PI / 4, 1.23], [3, -Math.PI / 2, 1.15],
+      [4, 0, 1.12], null, [3, Math.PI / 2, 1.15],
+    ][index];
+    ctx.beginPath();
+    for (let vertex = 0; vertex < sides; vertex++) {
+      const angle = start + vertex * 2 * Math.PI / sides;
+      const radius = size * scale * (index === 0 && vertex % 2 ? .45 : 1);
+      const point = [Math.cos(angle) * radius, Math.sin(angle) * radius];
+      if (vertex === 0) ctx.moveTo(...point);
+      else ctx.lineTo(...point);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = .55;
+    ctx.strokeStyle = '#506879';
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawFailureRadar(ctx, width, height, values, selected, dimmed) {
+  const center = [width / 2, height * .52];
+  const radius = Math.min(width * .345, (height - 25) / 2.35);
+  const maxShare = Math.max(...values);
+  const directions = values.map((_, index) => {
+    const angle = -Math.PI / 2 + index / values.length * Math.PI * 2;
+    return [Math.cos(angle), Math.sin(angle)];
+  });
+  const position = (index, distance) => directions[index].map((value, axis) => center[axis] + value * distance);
+  const polygon = points => {
+    ctx.beginPath();
+    ctx.moveTo(...points[0]);
+    points.slice(1).forEach(point => ctx.lineTo(...point));
+    ctx.closePath();
+  };
+
+  ctx.lineWidth = 1;
+  for (const level of [.25, .5, .75, 1]) {
+    ctx.strokeStyle = level === 1 ? '#c2d0db' : '#e1e9f0';
+    polygon(values.map((_, index) => position(index, radius * level)));
+    ctx.stroke();
+  }
+  ctx.strokeStyle = '#d0dce6';
+  for (const [index] of values.entries()) {
+    ctx.beginPath();
+    ctx.moveTo(...center);
+    ctx.lineTo(...position(index, radius));
+    ctx.stroke();
+  }
+
+  const points = values.map((value, index) => position(index, radius * value / maxShare));
+  polygon(points);
+  ctx.fillStyle = 'rgba(105, 131, 150, .14)';
+  ctx.strokeStyle = '#6d8a9e';
+  ctx.globalAlpha = dimmed ? .44 : selected.length ? .74 : 1;
+  ctx.fill();
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+
+  const narrow = width < 165;
+  values.forEach((_, index) => {
+    const emphasized = selected.includes(index);
+    const [, color] = failureRadarSeries[index];
+    const [x, y] = points[index];
+    ctx.globalAlpha = emphasized || (!dimmed && selected.length === 0) ? 1 : .65;
+    ctx.fillStyle = emphasized ? color : '#6e899c';
+    ctx.beginPath();
+    ctx.arc(x, y, emphasized ? 3.6 : 2.25, 0, 2 * Math.PI);
+    ctx.fill();
+    if (emphasized) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    const [glyphX, glyphY] = position(index, radius * 1.17);
+    drawFailureMarker(ctx, index, glyphX, glyphY, narrow ? 6 : 8);
+  });
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '700 ' + (narrow ? '13' : '16') + 'px "Times New Roman", serif';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  values.forEach((value, index) => {
+    const emphasized = selected.includes(index);
+    ctx.globalAlpha = emphasized || (!dimmed && selected.length === 0) ? 1 : .65;
+    const label = value.toFixed(1) + '%';
+    const [axisX, labelY] = position(index, radius * .81);
+    const bottomGap = Math.max(4, ctx.measureText(label).width / 2 + 4 - Math.abs(axisX - center[0]));
+    const labelX = index === 3 || index === 4 ? axisX + Math.sign(axisX - center[0]) * bottomGap : axisX;
+    ctx.strokeText(label, labelX, labelY);
+    ctx.fillStyle = emphasized ? failureRadarSeries[index][1] : '#172f45';
+    ctx.fillText(label, labelX, labelY);
+  });
+}
+
+
+function drawFailureRing(ctx, width, height, values, logo) {
+  const x = width / 2;
+  const y = height / 2;
+  const outer = Math.min((width - 83) / 2, height * .33);
+  const inner = outer * .66;
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const labels = [];
+  let start = -Math.PI / 2;
+
+  values.forEach((value, index) => {
+    if (value === 0) return;
+    const end = start + value / total * 2 * Math.PI;
+    ctx.fillStyle = failureRingSeries[index][1];
+    traceRingSector(ctx, x, y, inner, outer, start, end);
+    ctx.fill();
+    ctx.lineWidth = 1.15;
+    ctx.strokeStyle = '#f7fbfe';
+    ctx.stroke();
+
+    if (index !== 0) {
+      const mid = (start + end) / 2;
+      const dx = Math.cos(mid);
+      const dy = Math.sin(mid);
+      labels.push({
+        value,
+        index,
+        side: dx >= 0 ? 1 : -1,
+        edgeX: x + outer * dx,
+        edgeY: y + outer * dy,
+        elbowX: x + (outer + 5) * dx,
+        y: y + (outer + 5) * dy,
+      });
+    }
+    start = end;
+  });
+
+  ctx.font = '650 ' + (width < 174 ? '12' : '14') + 'px Segoe UI, sans-serif';
+  ctx.textBaseline = 'middle';
+  for (const side of [-1, 1]) {
+    const sideLabels = labels.filter(label => label.side === side).sort((a, b) => a.y - b.y);
+    let previousY = 1;
+    for (const label of sideLabels) {
+      label.y = Math.max(label.y, previousY + 16);
+      previousY = label.y;
+    }
+    const offset = Math.max(0, previousY - (height - 8));
+    for (const label of sideLabels) {
+      const labelY = label.y - offset;
+      const text = label.value.toFixed(1) + '%';
+      const inset = Math.max(29, ctx.measureText(text).width + 2);
+      const textX = side === 1 ? width - inset : inset;
+      const lineEnd = textX - 3 * side;
+      ctx.strokeStyle = failureRingSeries[label.index][1];
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(label.edgeX, label.edgeY);
+      ctx.lineTo(label.elbowX, labelY);
+      ctx.lineTo(lineEnd, labelY);
+      ctx.stroke();
+      ctx.fillStyle = '#233a50';
+      ctx.textAlign = side === 1 ? 'left' : 'right';
+      ctx.fillText(text, textX, labelY);
+    }
+  }
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#315e78';
+  const logoSize = outer * .51;
+  const logoY = y - outer * .22;
+  if (logo?.complete && logo.naturalWidth) {
+    ctx.drawImage(logo, x - logoSize / 2, logoY - logoSize / 2, logoSize, logoSize);
+  } else if (!logo) {
+    ctx.font = '700 ' + logoSize + 'px Segoe UI, sans-serif';
+    ctx.fillText('Σ', x, logoY);
+  }
+  ctx.font = '700 ' + (outer < 46 ? '15' : '19') + 'px Segoe UI, sans-serif';
+  ctx.fillText(values[0].toFixed(1) + '%', x, y + outer * .25);
+}
+
+const failureCharts = new Map();
+function updateFailureChart(canvas) {
+  const chart = failureCharts.get(canvas);
+  const { width, height } = canvas.getBoundingClientRect();
+  if (!width || !height) return;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(ratio, ratio);
+
+  if (chart.kind === 'static') {
+    const claim = chart.figure.dataset.activeClaim;
+    const axes = failureClaims[claim]?.axes?.[chart.model] ?? [];
+    drawFailureRadar(ctx, width, height, chart.values, axes, Boolean(claim) && axes.length === 0);
+  } else {
+    drawFailureRing(ctx, width, height, chart.values, chart.logo);
+  }
+}
+
+const failureChartObserver = new ResizeObserver(entries => entries.forEach(({ target }) => updateFailureChart(target)));
+document.querySelectorAll('.failure-evidence').forEach(figure => {
+  const grid = figure.querySelector('.failure-profile-grid');
+  const legend = figure.querySelector('.failure-chart-legend');
+  const note = figure.querySelector('.failure-evidence-note');
+  const buttons = figure.querySelectorAll('[data-failure-claim]');
+  const kind = figure.id === 'failure-static' ? 'static' : 'dynamic';
+  const series = kind === 'static' ? failureRadarSeries : failureRingSeries;
+
+  const canvases = failureProfiles.map(([model, radar, ring], index) => {
+    const values = kind === 'static' ? radar : ring;
+    const tile = document.createElement('div');
+    tile.className = 'failure-profile';
+    tile.dataset.failureModel = model;
+    const label = document.createElement('p');
+    label.className = 'failure-profile-name';
+    const name = document.createElement('span');
+    name.textContent = '(' + String.fromCharCode(97 + index) + ') ' + model + (kind === 'dynamic' && index === 3 ? '*' : '');
+    label.append(name);
+    const canvas = document.createElement('canvas');
+    canvas.className = 'failure-profile-chart';
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', model + '. ' + values.map((value, index) =>
+      series[index][0] + ': ' + value.toFixed(1) + '%').join('. '));
+    if (kind === 'static') tile.append(canvas, label);
+    else tile.append(label, canvas);
+    grid.append(tile);
+    const logo = kind === 'dynamic' && index < failureLogoNames.length ? new Image() : null;
+    failureCharts.set(canvas, { figure, kind, model, values, logo });
+    if (logo) {
+      logo.addEventListener('load', () => updateFailureChart(canvas), { once: true });
+      logo.src = 'assets/paper-v3/model-logos/' + failureLogoNames[index] + '.png';
+    }
+    failureChartObserver.observe(canvas);
+    return canvas;
+  });
+
+  legend.innerHTML = maintenanceLegend(series);
+  if (kind === 'static') {
+    legend.querySelectorAll('i').forEach((swatch, index) => {
+      const marker = document.createElement('canvas');
+      marker.className = 'failure-marker';
+      marker.width = 32;
+      marker.height = 32;
+      marker.setAttribute('aria-hidden', 'true');
+      drawFailureMarker(marker.getContext('2d'), index, 16, 16, 10);
+      swatch.replaceWith(marker);
+    });
+  }
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const claim = button.getAttribute('aria-pressed') === 'true' ? '' : button.dataset.failureClaim;
+    figure.dataset.activeClaim = claim;
+    buttons.forEach(choice => choice.setAttribute('aria-pressed', String(Boolean(claim) && choice === button)));
+    note.textContent = failureClaims[claim]?.note ?? '';
+    canvases.forEach(canvas => {
+      const model = failureCharts.get(canvas).model;
+      const selected = Boolean(failureClaims[claim]?.axes?.[model]);
+      canvas.parentElement.classList.toggle('is-focused', selected);
+      updateFailureChart(canvas);
+    });
+    const firstFocus = grid.querySelector('.is-focused');
+    if (firstFocus && window.matchMedia('(max-width: 640px)').matches && firstFocus.getBoundingClientRect().top > window.innerHeight - 120) {
+      firstFocus.scrollIntoView({ block: 'start' });
+    }
+  }));
+});
+
+
+// Figure 5, in the row and column order of the paper.
+const heatmapModels = ['GPT-5.6 Sol', 'Claude Opus 5', 'Claude Sonnet 5', 'Gemini 3.1 Pro Preview', 'Gemini 3.7 Flash', 'Grok 4.5', 'Qwen3.8-Max', 'Kimi K3', 'DeepSeek V4 Flash Vision Exp', 'Model mean'];
+const heatmapValues = {
+  taskonly: [
+    [-34.8,-15.6,0,-8.8,-20.0], [-26.1,-6.2,0,-17.6,-31.4],
+    [-26.1,-15.6,0,-23.5,-31.4], [8.7,-15.6,-8.0,-17.6,-34.3],
+    [39.1,-25.0,-4.0,-20.6,-31.4], [21.7,3.1,-4.0,-14.7,-20.0],
+    [-17.4,-18.8,0,-20.6,-28.6], [-4.3,3.1,0,-2.9,-11.4],
+    [-4.3,-9.4,-4.0,-17.6,-31.4], [-4.8,-11.1,-2.2,-16.0,-26.7],
+  ],
+  shared: [
+    [-34.8,-21.9,0,-8.8,-20.0], [-30.4,-18.8,0,-17.6,-31.4],
+    [-30.4,-15.6,0,-23.5,-31.4], [-4.3,-18.8,-8.0,-17.6,-34.3],
+    [34.8,-25.0,-4.0,-26.5,-25.7], [8.7,-3.1,-4.0,-14.7,-20.0],
+    [-26.1,-15.6,0,-20.6,-28.6], [-4.3,0,0,-2.9,-11.4],
+    [0,-21.9,-4.0,-17.6,-31.4], [-9.7,-15.6,-2.2,-16.7,-26.0],
+  ],
+};
+const heatmapPanel = document.querySelector('#heatmap-panel');
+const heatmapBody = heatmapPanel.querySelector('tbody');
+const heatmapClaims = document.querySelectorAll('[data-heatmap-focus]');
+let heatmapSetting = 'taskonly';
+let heatmapFocus = 'tasks';
+
+function signedChange(value) {
+  return value === 0 ? '0' : (value < 0 ? '−' : '+') + Math.abs(value).toFixed(1);
+}
+
+function showHeatmap() {
+  const matrix = heatmapValues[heatmapSetting];
+  const taskFocus = heatmapFocus === 'tasks';
+  heatmapPanel.setAttribute('aria-labelledby', 'heatmap-tab-' + heatmapSetting);
+  for (const claim of heatmapClaims) {
+    claim.setAttribute('aria-pressed', String(claim.dataset.heatmapFocus === heatmapFocus));
+  }
+  heatmapPanel.querySelectorAll('thead th').forEach((cell, index) => {
+    cell.classList.toggle('heatmap-header-focus', taskFocus && (index === 1 || index === 5));
+  });
+  const rows = heatmapModels.map((model, rowIndex) => {
+    const tr = document.createElement('tr');
+    const mean = rowIndex === heatmapModels.length - 1;
+    const chosenModel = !taskFocus && (rowIndex === 2 || rowIndex === 4);
+    tr.classList.toggle('heatmap-mean', mean);
+    const label = document.createElement('th');
+    label.scope = 'row';
+    label.textContent = model;
+    label.classList.toggle('heatmap-header-focus', taskFocus ? mean : chosenModel);
+    tr.append(label);
+    matrix[rowIndex].forEach((value, column) => {
+      const cell = document.createElement('td');
+      const selected = taskFocus ? mean && (column === 0 || column === 4) : chosenModel;
+      cell.textContent = signedChange(value);
+      cell.classList.toggle('heatmap-cell-focus', selected);
+      cell.classList.toggle('heatmap-cell-muted', !selected);
+      cell.classList.toggle('heatmap-gain', value > 0);
+      cell.classList.toggle('heatmap-strong', Math.abs(value) >= 28);
+      cell.style.setProperty('--heat', (Math.abs(value) / 40 * 100).toFixed(2) + '%');
+      tr.append(cell);
+    });
+    return tr;
+  });
+  heatmapBody.replaceChildren(...rows);
+  const setting = heatmapSetting === 'taskonly' ? 'Task-Only' : 'Shared';
+  const average = matrix.at(-1);
+  document.querySelector('#heatmap-note').textContent = taskFocus
+    ? 'In ' + setting + ', Region-Aware falls ' + Math.abs(average[4]).toFixed(1) + ' points on average, compared with ' + Math.abs(average[0]).toFixed(1) + ' for Mobility Planning.'
+    : 'Gemini 3.7 Flash and Claude Sonnet 5 start at 26.2% and 22.8% in Static. In ' + setting + ', they reach ' +
+      (heatmapSetting === 'taskonly' ? '14.1% and 2.7%' : '13.4% and 2.0%') + ' overall. The highlighted rows show how those changes vary by task.';
+}
+bindTabs('[data-heatmap-setting]', 'heatmapSetting', setting => {
+  heatmapSetting = setting;
+  showHeatmap();
+});
+for (const button of heatmapClaims) {
+  button.addEventListener('click', () => {
+    heatmapFocus = button.dataset.heatmapFocus;
+    showHeatmap();
+  });
+}
+showHeatmap();
+
+// Figure 6(a) model rates and the means reported in the text.
+const paperLineModels = [
+  { name: 'GPT-5.6 Sol', color: '#2869ad', rates: [18.1, 10.7, 2.7, 1.3] },
+  { name: 'Claude Opus 5', color: '#b94651', rates: [21.5, 15.4, 4.7, 1.3] },
+  { name: 'Gemini 3.7 Flash', color: '#18796e', rates: [26.2, 22.8, 14.1, 13.4] },
+];
+const paperConditions = ['Static', 'Explicit Update', 'Task-Only', 'Shared'];
+const paperLineSteps = {
+  apply: { index: 0, note: 'Even with every necessary update provided, mean success falls from 21.9% to 16.3% (−5.6 pp).' },
+  find: { index: 1, note: 'When agents must find the updates themselves, mean success falls from 16.3% to 7.2% (−9.1 pp).' },
+  filter: { index: 2, note: 'When unrelated events appear alongside the necessary ones, mean success falls from 7.2% to 5.4% (−1.8 pp).' },
+};
+// Error-bar endpoints recovered from the vector coordinates in Figure 6(b–c).
+const paperEventCounts = {
+  unrelated: {
+    label: 'Task-unrelated events', bins: ['0–<14', '14–<32', '≥32'], rates: [42.1, 55.6, 75.0],
+    intervals: [[18.18,68.75], [20,100], [0,100]],
+    note: 'Among model–task pairs that succeeded in Task-Only, the share failing in Shared rises with the number of unrelated events.',
+  },
+  necessary: {
+    label: 'Necessary task events', bins: ['1', '2', '≥3'], rates: [66.7, 83.3, 100.0],
+    intervals: [[55,78.05], [55.56,100], [100,100]],
+    note: 'Among model–task pairs that succeeded in Static, the share failing in Explicit Update rises with the number of necessary events.',
+  },
+};
+
+const paperContrastPanel = document.querySelector('#paper-contrast-panel');
+const paperContrastNote = document.querySelector('#paper-contrast-note');
+const paperLineView = paperContrastPanel.querySelector('.paper-line-view');
+const paperCanvas = paperLineView.querySelector('canvas');
+const paperCountView = document.querySelector('#paper-count-panel');
+let activePaperStep = 0;
+
+function drawPaperLineChart() {
+  const width = paperCanvas.clientWidth;
+  const height = paperCanvas.clientHeight;
+  if (!width || !height) return;
+  const pixelRatio = window.devicePixelRatio || 1;
+  paperCanvas.width = Math.round(width * pixelRatio);
+  paperCanvas.height = Math.round(height * pixelRatio);
+  const ctx = paperCanvas.getContext('2d');
+  ctx.scale(pixelRatio, pixelRatio);
+  const plot = { left: 33, right: width - 7, top: 19, bottom: height - 13 };
+  const x = index => plot.left + (plot.right - plot.left) * (index + .5) / 4;
+  const y = value => plot.bottom - (plot.bottom - plot.top) * value / 30;
+  const segment = (x1, y1, x2, y2) => {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  };
+
+  ctx.fillStyle = '#e5effa';
+  ctx.fillRect(x(activePaperStep) - 6, plot.top - 5, x(activePaperStep + 1) - x(activePaperStep) + 12, plot.bottom - plot.top + 5);
+  ctx.font = '12px Segoe UI, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let value = 0; value <= 30; value += 5) {
+    ctx.strokeStyle = '#d0deeb';
+    ctx.lineWidth = 1;
+    segment(plot.left, y(value), plot.right, y(value));
+    ctx.fillStyle = '#526b83';
+    ctx.fillText(String(value), plot.left - 6, y(value));
+  }
+  for (let index = 0; index < 4; index++) {
+    ctx.strokeStyle = '#d0deeb';
+    segment(x(index), plot.top, x(index), plot.bottom);
+  }
+  for (const model of paperLineModels) {
+    ctx.strokeStyle = model.color;
+    ctx.fillStyle = model.color;
+    for (let index = 0; index < 3; index++) {
+      ctx.globalAlpha = index === activePaperStep ? 1 : .38;
+      ctx.lineWidth = index === activePaperStep ? 3 : 1.6;
+      segment(x(index), y(model.rates[index]), x(index + 1), y(model.rates[index + 1]));
+    }
+    model.rates.forEach((value, index) => {
+      ctx.globalAlpha = index === activePaperStep || index === activePaperStep + 1 ? 1 : .45;
+      ctx.beginPath();
+      ctx.arc(x(index), y(value), 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+  ctx.globalAlpha = 1;
+  ctx.font = '700 ' + (width < 400 ? '12' : '14') + 'px Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  for (const index of [activePaperStep, activePaperStep + 1]) {
+    paperLineModels.forEach((model, modelIndex) => {
+      const value = model.rates[index];
+      if (index === 3 && modelIndex === 1) return;
+      const sharedTie = index === 3 && modelIndex === 0;
+      ctx.fillStyle = sharedTie ? '#334a61' : model.color;
+      const offset = modelIndex === 0 && index !== 3 ? 13 : -12;
+      ctx.fillText(value.toFixed(1) + '%' + (sharedTie ? ' ×2' : ''), x(index), y(value) + offset);
+    });
+  }
+  const labels = paperLineModels.map(model => model.name + ', ' +
+    paperConditions[activePaperStep] + ' ' + model.rates[activePaperStep].toFixed(1) + '%, ' +
+    paperConditions[activePaperStep + 1] + ' ' + model.rates[activePaperStep + 1].toFixed(1) + '%');
+  paperCanvas.setAttribute('aria-label', 'Task success rates. Highlighted comparison: ' + labels.join('. '));
+}
+
+function renderPaperEventCounts(data) {
+  paperCountView.querySelector('.paper-count-axis').textContent = data.label;
+  const columns = data.rates.map((value, index) => {
+    const [low, high] = data.intervals[index];
+    const bin = data.bins[index];
+    const label = bin + ' events: ' + value.toFixed(1) + '% conditional success loss. Error bar ' + low + '% to ' + high + '%.';
+    return '<div class="paper-count-column' + (index === 1 ? ' paper-count-middle' : '') + '"><div class="paper-count-track" role="img" aria-label="' + label + '">' +
+      '<i class="paper-count-bar" style="--value:' + value + '%"></i>' +
+      '<i class="paper-count-error" style="--low:' + low + '%;--interval:' + (high - low) + '%"></i>' +
+      '<b style="--value:' + value + '%">' + value.toFixed(1) + '%</b></div><span>' + bin + '</span></div>';
+  }).join('');
+  const chart = paperCountView.querySelector('.paper-count-chart');
+  chart.dataset.countType = data === paperEventCounts.necessary ? 'necessary' : 'unrelated';
+  chart.innerHTML =
+    '<div class="paper-count-ticks" aria-hidden="true"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>' + columns;
+}
+
+function showPaperContrast(view) {
+  const step = paperLineSteps[view];
+  paperContrastPanel.setAttribute('aria-labelledby', 'paper-contrast-tab-' + view);
+  paperContrastNote.textContent = step.note;
+  activePaperStep = step.index;
+  drawPaperLineChart();
+}
+function showPaperCounts(view) {
+  const counts = paperEventCounts[view];
+  paperCountView.setAttribute('aria-labelledby', 'paper-count-tab-' + view);
+  document.querySelector('#paper-count-note').textContent = counts.note;
+  renderPaperEventCounts(counts);
+}
+bindTabs('[data-paper-contrast]', 'paperContrast', showPaperContrast);
+bindTabs('[data-paper-count]', 'paperCount', showPaperCounts);
+new ResizeObserver(drawPaperLineChart).observe(paperCanvas);
+showPaperContrast('apply');
+showPaperCounts('necessary');
