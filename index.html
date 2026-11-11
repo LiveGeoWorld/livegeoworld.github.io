@@ -1,18 +1,72 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LiveGeo — Geographic Agents in Continuously Evolving Worlds</title><meta name="description" content="GeoWorld is a geographic world simulator. LiveGeo evaluates geographic agents in the evolving worlds built on it."><link rel="icon" href="assets/logo.png"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="research.css"><link rel="stylesheet" href="paper-v2.css"></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LiveGeo — Geographic Agents in Continuously Evolving Worlds</title><meta name="description" content="GeoWorld is a geographic world simulator. LiveGeo evaluates geographic agents in the evolving worlds built on it."><link rel="icon" href="assets/logo.png"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="research.css"><link rel="stylesheet" href="paper-v2.css"><link rel="stylesheet" href="intro.css"></head><body>
 <a class="skip" href="#main">Skip to content</a><header><div class="nav wrap"><a class="wordmark" href="#"><img src="assets/logo.png" width="34" height="34" alt="">LiveGeo</a><nav aria-label="Main navigation"><a href="#abstract">Overview</a><a href="#geoworld">GeoWorld</a><a href="#benchmark">LiveGeo</a><a href="#experiment">Experiments</a><a href="#results">Findings</a><a href="#case">Cases</a></nav></div></header>
-<main id="main"><section id="authors-and-title" class="hero wrap"><div class="project-name"><img src="assets/logo.png" width="72" height="72" alt="">LiveGeo</div><h1>Benchmarking Geographic Agents<br> in <em>Continuously Evolving Worlds</em></h1><p class="authors">Pengcheng Zhou<sup>1,†</sup>, Xuanyu Liu<sup>2,†</sup>, Yanchen Yin<sup>3</sup>, Tianjie Ju<sup>1</sup>, Bobo Li<sup>1</sup>,<br> Shengqiong Wu<sup>4,*</sup>, Hao Fei<sup>4</sup>, Mong-Li Lee<sup>1</sup>, Wynne Hsu<sup>1</sup></p><p class="affiliations"><span><sup>1</sup> National University of Singapore</span><span><sup>2</sup> Zhejiang University</span><span><sup>3</sup> Beijing University of Posts and Telecommunications</span><span><sup>4</sup> University of Oxford</span></p><p class="figure-note author-notes">† Equal contribution · * Corresponding author</p><div class="resource-buttons"><a class="primary" href="#film">Watch overview ↓</a><a href="#abstract">Read the abstract</a><a href="#resources">Project &amp; code</a></div></section>
-<section id="film" class="wrap film-section"><div class="section-heading"><div><span class="eyebrow">PROJECT OVERVIEW</span><h2>GeoWorld &amp; LiveGeo</h2></div><p>An introduction to the environment, benchmark, and a dynamic task example.</p></div><div class="film-player"><video id="project-video" controls playsinline preload="metadata" poster="video-v8/apps-9.jpg" aria-label="Introduction to GeoWorld and LiveGeo"><source src="video-v9/geoworld-livegeo-narrated.mp4" type="video/mp4">Your browser does not support video. <a href="video-v9/geoworld-livegeo-narrated.mp4">Download the introduction.</a></video></div></section>
+<main id="main"><section id="authors-and-title" class="hero wrap">
+ <h1><span class="hero-project-name"><span>Live</span><span>Geo</span>:</span> Benchmarking <span class="hero-title-phrase">Geographic Agents</span> in Continuously Evolving Worlds</h1>
+ <div class="authors" aria-label="Authors">
+  <span>Pengcheng Zhou<sup>1,†</sup>,</span>
+  <span>Xuanyu Liu<sup>2,†</sup>,</span>
+  <span>Yanchen Yin<sup>3</sup>,</span>
+  <span>Tianjie Ju<sup>1</sup>,</span>
+  <span>Bobo Li<sup>1</sup>,</span>
+  <span class="author-line-break" aria-hidden="true"></span>
+  <span>Shengqiong Wu<sup>4,*</sup>,</span>
+  <span>Hao Fei<sup>4</sup>,</span>
+  <span>Mong-Li Lee<sup>1</sup>,</span>
+  <span>Wynne Hsu<sup>1</sup></span>
+ </div>
+ <div class="affiliations" aria-label="Affiliations">
+  <span><sup>1</sup> National University of Singapore</span>
+  <span><sup>2</sup> Zhejiang University</span>
+  <span><sup>3</sup> Beijing University of Posts and Telecommunications</span>
+  <span><sup>4</sup> University of Oxford</span>
+ </div>
+ <p class="figure-note author-notes">† Equal contribution · * Corresponding author</p>
+ <div class="institution-logos" aria-label="Participating institutions">
+  <img src="assets/institutions/NUS.png" alt="National University of Singapore" width="990" height="451">
+  <img src="assets/institutions/zju.png" alt="Zhejiang University" width="1920" height="575">
+  <img src="assets/institutions/bupt.png" alt="Beijing University of Posts and Telecommunications" width="900" height="253">
+  <img src="assets/institutions/oxford.png" alt="University of Oxford" width="600" height="175">
+ </div>
+ <div class="resource-buttons"><a class="primary" href="#film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Watch overview ↓</span></a><a href="#abstract"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h4M9 12h6M9 16h6"/></svg><span>Read the abstract</span></a><a href="#resources"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1.1-.8.1-.8.1-.8 1.2.1 1.8 1.3 1.8 1.3 1.1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.3-3.2-.1-.3-.6-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.3 2.9.1 3.2.8.8 1.3 1.9 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A12 12 0 0 0 12 .3Z"/></svg><span>Project &amp; code</span></a></div>
+</section>
 <section id="abstract" class="wrap section abstract-section">
- <span class="eyebrow">ABSTRACT</span><h2>Making a valid decision is one problem.<br>Keeping it valid is another.</h2>
+ <h2>Abstract</h2>
  <div class="abstract-copy">
   <p>We introduce <strong>GeoWorld</strong>, a controllable and continuously evolving geographic environment for LLM agents, and <strong>LiveGeo</strong>, a benchmark built on GeoWorld to evaluate reliable geographic decision-making. Existing evaluations typically ask agents to reason and plan over fixed geographic states. GeoWorld is grounded in real-world geography and lets external conditions evolve over time independently of agent actions, while preserving verifiable histories of world states. LiveGeo places geographic tasks in this evolving environment, requiring agents to actively seek task-relevant information, check whether the evidence behind earlier decisions still holds, and revise their plans when necessary.</p>
   <p>Even frontier LLMs struggle with static tasks, and no model consistently excels across task categories. Strong static performance does not ensure reliability under changing conditions. Our analysis shows that agents often miss relevant changes and can still make invalid decisions after observing every necessary update. By releasing LiveGeo alongside GeoWorld, we aim to provide an extensible platform for studying how agents make and maintain valid decisions in evolving geographic worlds.</p>
  </div>
- <div class="paper-stats" aria-label="Benchmark scale"><div><strong>1,237</strong><span>task instances</span><small>1,088 static + 149 dynamic</small></div><div><strong>7 + 1</strong><span>Static + Dynamic</span><small>3 atomic + 4 compositional + 1&nbsp;dynamic&nbsp;suite</small></div><div><strong>6</strong><span>real-world cities</span><small>1,376 points of interest</small></div><div><strong>9</strong><span>evaluated models</span><small>3 independent runs per task</small></div></div>
+ <div id="film" class="film-section" aria-label="Video overview of GeoWorld and LiveGeo">
+  <div class="film-player"><video id="project-video" controls playsinline preload="metadata" poster="video-v8/apps-9.jpg" aria-label="Introduction to GeoWorld and LiveGeo"><source src="video-v9/geoworld-livegeo-narrated.mp4" type="video/mp4">Your browser does not support video. <a href="video-v9/geoworld-livegeo-narrated.mp4">Download the introduction.</a></video></div>
+ </div>
+</section>
+<section id="benchmark-scale" class="benchmark-scale wrap" aria-labelledby="benchmark-scale-title">
+ <h2 id="benchmark-scale-title">LiveGeo in numbers</h2>
+ <div class="benchmark-metrics">
+  <div class="benchmark-metric">
+   <strong>1,237</strong>
+   <span>task instances</span>
+   <small>1,088 static + 149 dynamic</small>
+  </div>
+  <div class="benchmark-metric">
+   <strong>7 + 1</strong>
+   <span>Static + Dynamic</span>
+   <small>3 atomic + 4 compositional + 1&nbsp;dynamic&nbsp;suite</small>
+  </div>
+  <div class="benchmark-metric">
+   <strong>6</strong>
+   <span>real-world cities</span>
+   <small>1,376 points of interest</small>
+  </div>
+  <div class="benchmark-metric">
+   <strong>9</strong>
+   <span>evaluated models</span>
+   <small>3 independent runs per task</small>
+  </div>
+ </div>
 </section>
 <section id="problem" class="band"><div class="wrap section">
  <span class="eyebrow">01 / RESEARCH QUESTION</span>
- <h2>Can agents make and maintain valid geographic decisions as the world changes?</h2>
+ <h2 class="paper-section-title">Can agents make and maintain valid geographic decisions as the world changes?</h2>
  <p class="question-context">As conditions change, agents need to check whether the evidence behind an earlier decision still holds and revise the decision when necessary.</p>
  <div class="research-question-grid">
   <a href="#finding-q1"><span>Q1</span><strong>How well can agents make valid geographic decisions?</strong><small>View Finding 1 →</small></a>
@@ -24,7 +78,7 @@
  <div class="gw-layout">
   <div class="gw-aside">
    <span class="eyebrow">02 / GEOWORLD</span>
-   <h2>A changing world.<br>A verifiable interaction history.</h2>
+   <h2 class="paper-section-title">A changing world.<br>A verifiable interaction&nbsp;history.</h2>
    <p class="gw-definition">A persistent geographic environment in which heterogeneous world states are grounded in a <em>shared spatial structure</em> and evolve along a <em>common timeline</em>, while every agent interaction is <em>recorded against the world state</em> at which it occurred.</p>
    <article class="gw-card" id="gw-card" aria-live="polite" aria-atomic="true">
     <h3 id="gw-card-title"></h3>
@@ -123,7 +177,7 @@
 </section>
 <section id="benchmark" class="band"><div class="wrap section">
  <div class="section-heading">
-  <div><span class="eyebrow">03 / LIVEGEO</span><h2>A benchmark for geographic<br>decision-making</h2></div>
+  <div><span class="eyebrow">03 / LIVEGEO</span><h2 class="paper-section-title">A benchmark for geographic<br>decision-making</h2></div>
  </div>
  <div id="task-coverage" class="livegeo-task-coverage">
  <div class="taxonomy-paper"><div class="taxonomy-paper-head"><b>Task category</b><b>Decision dependency</b></div><div class="taxonomy-family">Atomic · establish local validity</div><div><b>Grounding</b><p>Resolve visual or textual evidence to the exact geographic entity.</p></div><div><b>Discovery</b><p>Translate intent into destinations satisfying joint spatial, service, and preference requirements.</p></div><div><b>Mobility Planning</b><p>Satisfy journey requirements, including waypoints, dwell times, modes, and deadlines.</p></div><div class="taxonomy-family">Compositional · compose jointly valid decisions</div><div><b>Multi-Entity</b><p>Coordinate location and availability constraints across participants.</p></div><div><b>Long-Horizon</b><p>Preserve downstream feasibility across linked activities and time windows.</p></div><div><b>Safety-Aware</b><p>Ground destination and access-route choices in relevant safety evidence.</p></div><div><b>Region-Aware</b><p>Use regional practices, schedules, and geographic context to constrain valid choices.</p></div><div class="taxonomy-extension"><b>+&nbsp;Dynamic Tasks</b><p>Selected static tasks gain time-stamped events. Agents reassess their earlier decisions when those events change the conditions.</p></div></div>
@@ -207,7 +261,7 @@
  </div>
 </div></section>
 <section id="experiment" class="wrap section results-section">
- <div class="section-heading"><div><span class="eyebrow">04 / EXPERIMENTS</span><h2>Evaluating geographic agents</h2></div></div>
+ <div class="section-heading"><div><span class="eyebrow">04 / EXPERIMENTS</span><h2 class="paper-section-title">Evaluating geographic agents</h2></div></div>
  <div class="subsection-title"><h3>Evaluation environment</h3></div>
  <div class="experiment-environment">
   <div><h4>World coverage</h4><dl class="experiment-coverage"><div><dt>Real-world cities</dt><dd>6</dd></div><div><dt>Regions</dt><dd>88</dd></div><div><dt>Points of interest</dt><dd>1,376</dd></div><div><dt>Cached routes</dt><dd>107,372</dd></div></dl></div>
@@ -289,7 +343,7 @@
  <div class="results-detail" id="main-results"><div class="table-heading"><div><h3>Main results</h3><p>Task success rate (%) · mean ± standard error</p></div><div class="result-tabs" role="tablist" aria-label="Result settings"><button role="tab" id="result-tab-static" aria-selected="true" aria-controls="result-panel" data-results="static">Static capabilities</button><button role="tab" id="result-tab-dynamic" aria-selected="false" tabindex="-1" aria-controls="result-panel" data-results="dynamic">Matched dynamic evaluation</button></div></div><p class="table-swipe">Swipe the table to view every task column →</p><div id="result-panel" role="tabpanel" aria-labelledby="result-tab-static"><p id="result-description" class="table-context">1,088 static tasks across seven categories.</p><div class="table-scroll" tabindex="0" role="region" aria-label="Model results table; scroll horizontally on small screens"><table id="results-table"><caption class="sr-only">Model success rates from paper Table 3.</caption><thead></thead><tbody></tbody></table></div><p class="figure-note">Bold marks the best mean in each column.</p></div></div>
 </section>
 <section id="results" class="wrap section results-section" aria-labelledby="findings-heading">
- <div class="section-heading"><div><span class="eyebrow">05 / FINDINGS</span><h2 id="findings-heading">Making and maintaining valid geographic decisions</h2></div></div>
+ <div class="section-heading"><div><span class="eyebrow">05 / FINDINGS</span><h2 class="paper-section-title" id="findings-heading">Making and maintaining valid geographic decisions</h2></div></div>
  <section id="finding-q1" class="finding-question" aria-labelledby="finding-q1-heading">
   <div class="subsection-title"><span>F1</span><h3 id="finding-q1-heading">Geographic decision-making under fixed conditions</h3></div>
   <div class="q1-evidence-grid">
@@ -504,7 +558,7 @@
  </section>
 </section>
 <section id="case" class="wrap section real-case-section">
- <div class="section-heading"><div><span class="eyebrow">06 / CASE STUDY</span><h2>Can this Cape Town trip fit within 56 minutes?</h2></div></div>
+ <div class="section-heading"><div><span class="eyebrow">06 / CASE STUDY</span><h2 class="paper-section-title">Can this Cape Town trip fit within 56 minutes?</h2></div></div>
  <div class="case-study">
   <div class="case-request">
    <div class="case-request-heading">
