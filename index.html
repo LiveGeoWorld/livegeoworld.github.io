@@ -20,37 +20,104 @@
   <a href="#finding-q3"><span>Q3</span><strong>Where does reliable decision-making break down?</strong><small>View Finding 6 →</small></a>
  </div>
 </div></section>
-<section id="geoworld" class="wrap section method-section">
- <div class="section-heading"><div><span class="eyebrow">02 / GEOWORLD</span><h2>A changing world.<br>A verifiable interaction history.</h2></div></div>
- <figure class="research-figure">
-  <button id="geoworld-figure" type="button" class="figure-button enlarge" data-image="assets/paper-v3/architecture.png" data-caption="Figure 2 · GeoWorld architecture.">
-   <span class="geoworld-image">
-    <img src="assets/paper-v3/architecture.png" alt="Paper Figure 2: geographic structure, time-varying world states, tool interfaces, and interaction logging." width="2000" height="1165" loading="lazy">
-    <svg class="geoworld-overlay" viewBox="0 0 2000 1165" preserveAspectRatio="none" aria-hidden="true">
-     <g data-zone="structure" hidden>
-      <path d="M0 0H2000V1165H0Z M303 36H1224V306H303Z M1587 634H1981V729H1587Z"/>
-      <rect x="303" y="36" width="921" height="270" rx="12"/>
-      <rect x="1587" y="634" width="394" height="95"/>
-     </g>
-     <g data-zone="events" hidden>
-      <path d="M0 0H2000V1165H0Z M1236 36H1980V306H1236Z M390 324H1530V774H338V566L390 542Z"/>
-      <rect x="1236" y="36" width="744" height="270" rx="12"/>
-      <polygon points="390,324 1530,324 1530,774 338,774 338,566 390,542"/>
-     </g>
-     <g data-zone="observations" hidden>
-      <path d="M0 0H2000V1165H0Z M299 790H1980V1060H299Z"/>
-      <rect x="299" y="790" width="1681" height="270" rx="12"/>
-     </g>
-    </svg>
-   </span>
-   <span>View architecture in detail ↗</span>
-  </button>
-  <figcaption><b>Figure 2 · GeoWorld.</b> A world state combines geographic structure and dynamic conditions: <span class="math" aria-label="W sub t equals G comma X sub t">W<sub>t</sub> = (G, X<sub>t</sub>)</span>.</figcaption>
- </figure>
- <div class="method-notes" role="group" aria-label="Highlight GeoWorld components">
-  <button type="button" class="geoworld-note" data-geoworld-focus="structure" aria-pressed="false" aria-controls="geoworld-figure"><span class="geoworld-note-number" aria-hidden="true">1</span><span><strong>Shared geographic structure</strong><span class="geoworld-note-copy">Places, roads, and regions share a common spatial reference. This ties changing conditions, such as traffic or place availability, to the entities they affect.</span></span></button>
-  <button type="button" class="geoworld-note" data-geoworld-focus="events" aria-pressed="false" aria-controls="geoworld-figure"><span class="geoworld-note-number" aria-hidden="true">2</span><span><strong>Exogenous events and virtual time</strong><span class="geoworld-note-copy">Agents choose when to advance virtual time. Scheduled events determine what changes take effect as time advances.</span></span></button>
-  <button type="button" class="geoworld-note" data-geoworld-focus="observations" aria-pressed="false" aria-controls="geoworld-figure"><span class="geoworld-note-number" aria-hidden="true">3</span><span><strong>State-aligned observations</strong><span class="geoworld-note-copy">Tools return observations for the current virtual time. GeoWorld records each query, observation, and action with its timestamp and world-state reference.</span></span></button>
+<section id="geoworld" class="wrap section method-section gw-section">
+ <div class="gw-layout">
+  <div class="gw-aside">
+   <span class="eyebrow">02 / GEOWORLD</span>
+   <h2>A changing world.<br>A verifiable interaction history.</h2>
+   <p class="gw-definition">A persistent geographic environment in which heterogeneous world states are grounded in a <em>shared spatial structure</em> and evolve along a <em>common timeline</em>, while every agent interaction is <em>recorded against the world state</em> at which it occurred.</p>
+   <article class="gw-card" id="gw-card" aria-live="polite" aria-atomic="true">
+    <h3 id="gw-card-title"></h3>
+    <p id="gw-card-body"></p>
+    <dl id="gw-card-stats" hidden></dl>
+    <span class="gw-card-ref" id="gw-card-ref"></span>
+   </article>
+   <p class="gw-hint">Hover or tap any part of the diagram.</p>
+   <button type="button" class="gw-paper-figure enlarge" data-image="assets/paper-v3/architecture.png" data-caption="Figure 2 · GeoWorld architecture.">View the paper figure ↗</button>
+  </div>
+
+  <div class="gw-stage" tabindex="-1">
+   <div class="gw-scroll" role="region" aria-label="Interactive GeoWorld architecture. Scroll horizontally on small screens.">
+   <div class="gw-diagram" id="gw-diagram">
+    <svg class="gw-wires" aria-hidden="true"><defs><marker id="gw-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z"/></marker></defs></svg>
+
+    <div class="gw-node gw-source" data-node="source">
+     <button type="button" class="gw-hit" data-select="source"><img src="assets/geoworld-v6/icon-globe.png" alt="" width="150" height="150"><strong>Real-world geographic data</strong><small>initializes &amp; versions the world</small></button>
+    </div>
+
+    <div class="gw-node gw-world" data-node="world">
+     <div class="gw-world-head">
+      <button type="button" class="gw-hit gw-title" data-select="world">Geographic world state <span class="gw-math">W<sub>t</sub> = (G, X<sub>t</sub>)</span></button>
+      <button type="button" class="gw-node gw-clock" data-node="clock" data-select="clock" data-links="t-ui"><span class="gw-clock-face" aria-hidden="true"><i></i></span><span><small>virtual clock</small><b id="gw-clock-time">t = 12:00</b></span></button>
+     </div>
+     <div class="gw-world-grid">
+      <div class="gw-node gw-panel gw-g" data-node="g">
+       <button type="button" class="gw-hit gw-panel-title" data-select="g">Static geographic structure <span class="gw-math">G</span></button>
+       <div class="gw-items">
+        <button type="button" class="gw-node gw-item" data-node="g-regions" data-select="g-regions" data-links="t-map"><img src="assets/geoworld-v6/icon-regions.png" alt="" width="110" height="105"><b>Regions</b><small>boundaries, hierarchy</small></button>
+        <button type="button" class="gw-node gw-item" data-node="g-roads" data-select="g-roads" data-links="t-map"><img src="assets/geoworld-v6/icon-roads.png" alt="" width="100" height="105"><b>Road network</b><small>routes, travel modes</small></button>
+        <button type="button" class="gw-node gw-item" data-node="g-places" data-select="g-places" data-links="t-map t-local"><img src="assets/geoworld-v6/icon-places.png" alt="" width="110" height="105"><b>Places / POIs</b><small>categories, attributes</small></button>
+        <button type="button" class="gw-node gw-item" data-node="g-relations" data-select="g-relations" data-links="t-map"><img src="assets/geoworld-v6/icon-relations.png" alt="" width="120" height="100"><b>Relations</b><small>distance, adjacency</small></button>
+       </div>
+      </div>
+      <div class="gw-node gw-panel gw-x" data-node="x">
+       <button type="button" class="gw-hit gw-panel-title" data-select="x">Time-varying states <span class="gw-math">X<sub>t</sub></span></button>
+       <div class="gw-items">
+        <button type="button" class="gw-node gw-item" data-node="x-weather" data-select="x-weather" data-links="hs-weather ly-weather t-weather"><img src="assets/geoworld-v6/icon-weather.png" alt="" width="90" height="80"><b>Weather</b></button>
+        <button type="button" class="gw-node gw-item" data-node="x-traffic" data-select="x-traffic" data-links="hs-traffic ly-traffic t-news t-map"><img src="assets/geoworld-v6/icon-traffic.png" alt="" width="100" height="75"><b>Traffic</b></button>
+        <button type="button" class="gw-node gw-item" data-node="x-status" data-select="x-status" data-links="hs-status ly-status t-local"><img src="assets/geoworld-v6/icon-status.png" alt="" width="95" height="85"><b>Place status</b></button>
+        <button type="button" class="gw-node gw-item" data-node="x-events" data-select="x-events" data-links="hs-events ly-events t-news"><img src="assets/geoworld-v6/icon-events.png" alt="" width="85" height="85"><b>Events</b></button>
+       </div>
+      </div>
+      <div class="gw-node gw-panel gw-city" data-node="city">
+       <button type="button" class="gw-hit gw-city-hit" data-select="city" aria-label="One shared, evolving city"></button>
+       <div class="gw-city-art">
+        <img src="assets/geoworld-v6/city.webp" alt="Illustrated city where weather changes, traffic evolves, places open and close, and regional events occur." width="1105" height="435">
+        <button type="button" class="gw-hotspot" data-hs="hs-weather" data-select="x-weather" style="--x:14.93%;--y:3.68%;--w:24.8%;--h:16.78%" aria-label="Weather changes"><span class="gw-pulse"></span></button>
+        <button type="button" class="gw-hotspot" data-hs="hs-traffic" data-select="x-traffic" style="--x:24.71%;--y:52.87%;--w:17.74%;--h:28.51%" aria-label="Traffic evolves"><span class="gw-pulse"></span></button>
+        <button type="button" class="gw-hotspot" data-hs="hs-status" data-select="x-status" style="--x:54.39%;--y:37.24%;--w:19.64%;--h:28.05%" aria-label="Places open or close"><span class="gw-pulse"></span></button>
+        <button type="button" class="gw-hotspot" data-hs="hs-events" data-select="x-events" style="--x:81.36%;--y:21.84%;--w:18.01%;--h:44.6%" aria-label="Regional events"><span class="gw-pulse"></span></button>
+       </div>
+      </div>
+      <div class="gw-node gw-panel gw-layers" data-node="layers">
+       <button type="button" class="gw-hit gw-panel-title" data-select="layers">World state <span class="gw-math">W<sub>t</sub></span></button>
+       <div class="gw-layer-stack">
+        <img src="assets/geoworld-v6/layers.png" alt="" width="240" height="320">
+        <ol>
+         <li data-ly="ly-events">Events</li>
+         <li data-ly="ly-status">Place status</li>
+         <li data-ly="ly-traffic">Traffic</li>
+         <li data-ly="ly-weather">Weather</li>
+         <li data-ly="ly-static">Static structure</li>
+        </ol>
+       </div>
+      </div>
+     </div>
+    </div>
+
+    <div class="gw-node gw-interact" data-node="interact">
+     <span class="gw-interact-label">Agent interaction</span>
+     <div class="gw-interact-grid">
+      <button type="button" class="gw-node gw-agent" data-node="agent" data-select="agent"><img src="assets/geoworld-v6/icon-agent.png" alt="" width="115" height="120"><b>LLM agent</b><small>ReAct</small></button>
+      <div class="gw-io" aria-hidden="true"><span class="gw-io-q">query / action</span><span class="gw-io-o">observation at <i>t</i></span></div>
+      <div class="gw-node gw-panel gw-tools" data-node="tools">
+       <button type="button" class="gw-hit gw-panel-title" data-select="tools">Tool interfaces <span class="gw-count">8 Apps · 31 tools</span></button>
+       <div class="gw-apps">
+        <button type="button" class="gw-node gw-app" data-node="t-map" data-select="t-map" data-links="g-regions g-roads g-places g-relations"><img src="assets/geoworld-v6/icon-map.png" alt="" width="70" height="70">MapApp</button>
+        <button type="button" class="gw-node gw-app" data-node="t-local" data-select="t-local" data-links="x-status hs-status ly-status g-places"><img src="assets/geoworld-v6/icon-search.png" alt="" width="70" height="70">LocalService</button>
+        <button type="button" class="gw-node gw-app" data-node="t-weather" data-select="t-weather" data-links="x-weather hs-weather ly-weather"><img src="assets/geoworld-v6/icon-sun.png" alt="" width="70" height="70">Weather</button>
+        <button type="button" class="gw-node gw-app" data-node="t-news" data-select="t-news" data-links="x-traffic x-events hs-traffic hs-events ly-traffic ly-events"><img src="assets/geoworld-v6/icon-car.png" alt="" width="70" height="70">CityNews</button>
+        <button type="button" class="gw-node gw-app" data-node="t-people" data-select="t-people"><img src="assets/geoworld-v6/icon-cal.png" alt="" width="70" height="70">Calendar · Messaging</button>
+        <button type="button" class="gw-node gw-app gw-app-ui" data-node="t-ui" data-select="t-ui" data-links="clock"><span class="gw-app-glyph" aria-hidden="true">⏵</span>UserInterface</button>
+       </div>
+      </div>
+      <button type="button" class="gw-node gw-log" data-node="log" data-select="log"><img src="assets/geoworld-v6/icon-log.png" alt="" width="95" height="100"><b>Interaction log</b><small>call · observation · <i>t</i> · state</small></button>
+     </div>
+    </div>
+    <p class="gw-footnote" aria-hidden="true">The world evolves on its own schedule; the agent only decides when to look.</p>
+   </div>
+   </div>
+  </div>
  </div>
  <p class="geoworld-transition">GeoWorld lets us replay a task from the same starting state. <a href="#benchmark">LiveGeo</a> uses that capability to compare static and dynamic versions of selected tasks.</p>
 </section>

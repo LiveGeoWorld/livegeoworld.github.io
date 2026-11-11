@@ -35,7 +35,6 @@ function showSuccessRule() {
 successTask.addEventListener('change', showSuccessRule);
 showSuccessRule();
 
-const geoworldFigure = document.querySelector('#geoworld-figure');
 const constructionControls = [...document.querySelectorAll('[data-construction-focus]')];
 const constructionTiles = [...document.querySelectorAll('[data-construction-item]')];
 
@@ -52,23 +51,295 @@ for (const control of constructionControls) {
   });
 }
 
-const geoworldControls = [...document.querySelectorAll('[data-geoworld-focus]')];
+// ---------------------------------------------------------------------------
+// GeoWorld architecture: focus a component, explain it in the side card, and
+// trace the world → tools → agent → log loop while nothing is focused.
+// Card text follows paper §3 and Appendix A.1–A.3.
+// ---------------------------------------------------------------------------
+(function geoworldDiagram() {
+  const diagram = document.querySelector('#gw-diagram');
+  if (!diagram) return;
+  const W = '<span class="gw-math">W<sub>t</sub> = (G, X<sub>t</sub>)</span>';
+  const cards = {
+    default: { title: 'Geographic world state ' + W, ref: 'Paper §3 · World State Representation',
+      body: 'GeoWorld pairs a stable geographic structure <b>G</b> with time-varying conditions <b>X<sub>t</sub></b>. Both are tied to the same places, roads and regions, so every change is grounded in the entity it affects, and every observation can be traced back to the state that produced it.' },
+    world: { title: 'Geographic world state ' + W, ref: 'Paper §3 · World State Representation',
+      body: 'Rather than keeping traffic, weather, place status and events as independent data sources, GeoWorld attaches them to a common set of geographic entities and spatial references. This gives state updates and agent observations one consistent spatial foundation.' },
+    source: { title: 'Real-world geographic data', ref: 'Paper §3 · Appendix A.1',
+      body: 'Built primarily from Google Places, geocoding and routing services. Candidates are coordinate-checked, filtered to city boundaries and deduplicated by provider ID, with provenance kept for every asset. All assets are versioned and frozen before evaluation.',
+      stats: [['6', 'cities'], ['88', 'regions'], ['1,376', 'POIs'], ['107,372', 'cached routes']] },
+    g: { title: 'Static geographic structure <span class="gw-math">G</span>', ref: 'Paper §3 · Appendix A.1',
+      body: 'Places, roads, regions and their spatial relations. G stays fixed during an episode and is the shared spatial reference for every state update and every observation.' },
+    'g-regions': { title: 'Regions', ref: 'Appendix A.1',
+      body: 'Functional urban areas built around real locations and their roles, each with a name, centre, functional labels, supporting evidence and provenance. POIs are assigned to a region within 3,500 m.',
+      stats: [['88', 'regions'], ['6', 'cities']] },
+    'g-roads': { title: 'Road network and routes', ref: 'Appendix A.1',
+      body: 'Routes from the Google Routes API in three travel modes: DRIVE, WALK and TRANSIT. Each cached record stores a normalised origin and destination, distance, estimated duration and route geometry.',
+      stats: [['107,372', 'cached routes'], ['3', 'travel modes']] },
+    'g-places': { title: 'Places / POIs', ref: 'Appendix A.1',
+      body: 'Collected with Nearby and Text Search around region centres and transport corridors, then enriched from Place Details and public web evidence with opening information, service descriptions and menus.',
+      stats: [['1,376', 'POIs']] },
+    'g-relations': { title: 'Geographic relations', ref: 'Paper §3',
+      body: 'Spatial relations between entities, such as distance, adjacency and region membership. They give tasks, events and observations a common spatial frame.' },
+    x: { title: 'Time-varying world states <span class="gw-math">X<sub>t</sub></span>', ref: 'Paper §3 · Appendix A.2',
+      body: 'Conditions that change along the virtual timeline. Each change is an event with an occurrence time, an affected place or region, and a state update; lasting changes also record their effective interval.' },
+    'x-weather': { title: 'Weather', ref: 'Appendix A.2',
+      body: 'Weather conditions change over time for the places and regions they affect. The agent sees them only through WeatherApp, as they stand at the current virtual time.' },
+    'x-traffic': { title: 'Traffic', ref: 'Appendix A.2',
+      body: 'Congestion and accidents change travel times on affected routes. They surface as public alerts in CityNewsApp and in route queries made after the change takes effect.' },
+    'x-status': { title: 'Place status', ref: 'Appendix A.2',
+      body: 'Opening hours and availability. The same place can be open at one virtual time and closed at another; LocalServiceApp returns the status that holds now.' },
+    'x-events': { title: 'Regional events', ref: 'Appendix A.2',
+      body: 'Festivals, closures and emergencies attached to a region. Events with causal links enter the world state only after their prerequisite change has occurred, not merely when their scheduled time arrives.' },
+    city: { title: 'One shared, evolving city', ref: 'Paper §1 · §3',
+      body: 'Every task runs inside the same world. Weather, traffic, place status and regional events change on real places and regions, and only some of those changes matter to a given task.' },
+    layers: { title: 'World state <span class="gw-math">W<sub>t</sub></span> at time t', ref: 'Appendix A.2',
+      body: 'At any virtual time, GeoWorld resolves W<sub>t</sub> from the events that have occurred and are still in effect, layered over the static structure. Finite-duration changes are removed when their interval ends.' },
+    clock: { title: 'Virtual clock', ref: 'Paper §3 · Appendix A.2',
+      body: 'One global clock gives every state update a common temporal reference. The agent decides when to advance it; the predefined event schedule decides what changes. Agent actions never alter exogenous events, so each run can be replayed.' },
+    interact: { title: 'Agent–world interface', ref: 'Paper §3 · Appendix A.3',
+      body: 'The agent reaches the world only through tools. Every response is resolved against the world state at the current virtual time, and every interaction is logged with that state.' },
+    agent: { title: 'LLM agent', ref: 'Appendix A.3',
+      body: 'A general-purpose LLM agent under a ReAct scaffold. It chooses what to query, which permitted operations to perform and when to advance time, but has read-only access to weather, traffic, service states and the event schedule.' },
+    tools: { title: 'Tool interfaces', ref: 'Appendix A.3',
+      body: 'Apps are opened on demand and expose their tools and schemas for the current task. Because every query is resolved at the current virtual time, the same call can return different results later.',
+      stats: [['8', 'public Apps'], ['31', 'tools']] },
+    't-map': { title: 'MapApp', ref: 'Appendix A.3',
+      body: 'Places, spatial relations and mobility information: search, place details, and routes with travel times for each mode.' },
+    't-local': { title: 'LocalServiceApp', ref: 'Appendix A.3',
+      body: 'Service details for places and their current open or closed status.' },
+    't-weather': { title: 'WeatherApp', ref: 'Appendix A.3',
+      body: 'Environmental conditions as they stand at the current virtual time.' },
+    't-news': { title: 'CityNewsApp', ref: 'Appendix A.3',
+      body: 'City information: public traffic alerts and regional event notices that have taken effect by the current time.' },
+    't-people': { title: 'CalendarApp · MessagingApp', ref: 'Appendix A.3',
+      body: 'Participant-related information and communication, used when a task involves several people.' },
+    't-ui': { title: 'UserInterfaceApp', ref: 'Appendix A.3',
+      body: 'Plan submission, task termination and <code>advance_simulation</code>, which moves the virtual clock forward and applies every scheduled event whose conditions are now met. SystemApp opens the other Apps.' },
+    log: { title: 'Interaction log', ref: 'Paper §3 · Appendix A.3',
+      body: 'Each tool call is stored with its arguments, returned result, timestamp and latency, aligned with the virtual-time event log. This reconstructs what the agent asked, what it saw, and which world state that observation reflected.' },
+  };
 
-function showGeoworldRegion(region) {
-  for (const zone of geoworldFigure.querySelectorAll('[data-zone]')) {
-    zone.toggleAttribute('hidden', zone.dataset.zone !== region);
-  }
-  for (const control of geoworldControls) {
-    control.setAttribute('aria-pressed', String(control.dataset.geoworldFocus === region));
-  }
-}
+  const card = {
+    title: document.querySelector('#gw-card-title'),
+    body: document.querySelector('#gw-card-body'),
+    stats: document.querySelector('#gw-card-stats'),
+    ref: document.querySelector('#gw-card-ref'),
+  };
+  const nodes = new Map([...diagram.querySelectorAll('[data-node]')].map(el => [el.dataset.node, el]));
+  const marks = [...diagram.querySelectorAll('[data-hs], [data-ly]')];
+  const selectors = [...diagram.querySelectorAll('[data-select]')];
+  let pinned = null;
+  let shown;
 
-for (const control of geoworldControls) {
-  control.addEventListener('click', () => {
-    const selected = control.getAttribute('aria-pressed') === 'true';
-    showGeoworldRegion(selected ? null : control.dataset.geoworldFocus);
+  function renderCard(key) {
+    const c = cards[key] || cards.default;
+    card.title.innerHTML = c.title;
+    card.body.innerHTML = c.body;
+    card.ref.textContent = c.ref;
+    card.stats.hidden = !c.stats;
+    card.stats.replaceChildren(...(c.stats || []).map(([value, label]) => {
+      const item = document.createElement('div');
+      const dd = document.createElement('dd');
+      const dt = document.createElement('dt');
+      dd.textContent = value;
+      dt.textContent = label;
+      item.append(dd, dt);
+      return item;
+    }));
+  }
+
+  function withAncestors(el, set) {
+    for (let p = el; p && p !== diagram; p = p.parentElement) {
+      if (p.dataset.node) set.add(p.dataset.node);
+    }
+  }
+
+  function show(key) {
+    if (key === shown) return;
+    shown = key;
+    renderCard(key);
+    if (!key) {
+      diagram.removeAttribute('data-focus');
+      nodes.forEach(el => el.removeAttribute('data-state'));
+      marks.forEach(el => el.classList.remove('is-linked'));
+      wires.forEach(w => w.path.removeAttribute('data-state'));
+      return;
+    }
+    const active = nodes.get(key);
+    const links = new Set((active.dataset.links || '').split(' ').filter(Boolean));
+    const context = new Set();
+    withAncestors(active.parentElement, context);
+    const inside = new Set([...active.querySelectorAll('[data-node]')].map(el => el.dataset.node));
+    for (const link of links) {
+      const target = nodes.get(link) || diagram.querySelector(`[data-hs="${link}"], [data-ly="${link}"]`);
+      if (target) withAncestors(nodes.has(link) ? target.parentElement : target, context);
+    }
+    diagram.dataset.focus = key;
+    nodes.forEach((el, name) => {
+      let state = 'dim';
+      if (name === key) state = 'active';
+      else if (inside.has(name)) state = 'inside';
+      else if (links.has(name)) state = 'linked';
+      else if (context.has(name)) state = 'context';
+      el.dataset.state = state;
+    });
+    // Fade only the outermost faded component so opacity does not compound.
+    nodes.forEach(el => {
+      const parent = el.parentElement.closest('[data-node]');
+      if (el.dataset.state === 'dim' && parent && diagram.contains(parent) && parent.dataset.state === 'dim') el.dataset.state = 'dim-in';
+    });
+    marks.forEach(el => el.classList.toggle('is-linked', links.has(el.dataset.hs || el.dataset.ly)));
+    const lit = new Set([key, ...inside, ...links]);
+    wires.forEach(w => {
+      const on = w.ends.some(end => lit.has(end));
+      w.path.dataset.state = on ? 'on' : 'off';
+    });
+  }
+
+  function keyFromEvent(event) {
+    const target = event.target.closest('[data-select], [data-node]');
+    if (!target || !diagram.contains(target)) return null;
+    return target.dataset.select || target.dataset.node;
+  }
+
+  diagram.addEventListener('pointerover', event => {
+    const key = keyFromEvent(event);
+    if (key) show(key);
   });
-}
+  diagram.addEventListener('pointerleave', () => show(pinned));
+  diagram.addEventListener('focusin', event => {
+    const key = keyFromEvent(event);
+    if (key) show(key);
+  });
+  diagram.addEventListener('focusout', event => {
+    if (!diagram.contains(event.relatedTarget)) show(pinned);
+  });
+  diagram.addEventListener('click', event => {
+    const target = event.target.closest('[data-select]');
+    if (!target) return;
+    const key = target.dataset.select;
+    pinned = pinned === key ? null : key;
+    selectors.forEach(el => el.setAttribute('aria-pressed', String(Boolean(pinned) && el.dataset.select === pinned)));
+    shown = undefined;
+    show(pinned || key);
+  });
+  diagram.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !pinned) return;
+    pinned = null;
+    selectors.forEach(el => el.setAttribute('aria-pressed', 'false'));
+    show(null);
+  });
+  selectors.forEach(el => el.setAttribute('aria-pressed', 'false'));
+
+  // Connectors are measured from the live layout so they follow any breakpoint.
+  const svg = diagram.querySelector('.gw-wires');
+  const NS = 'http://www.w3.org/2000/svg';
+  const wireSpecs = [
+    { id: 'init', ends: ['source', 'world'] },
+    { id: 'query', ends: ['agent', 'tools'] },
+    { id: 'resolve', ends: ['world', 'tools', 'interact'], label: 'resolved at t' },
+    { id: 'obs', ends: ['tools', 'agent'] },
+    { id: 'log', ends: ['tools', 'agent', 'log'] },
+  ];
+  const wires = wireSpecs.map(spec => {
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('class', 'gw-wire');
+    path.setAttribute('marker-end', 'url(#gw-arrow)');
+    svg.append(path);
+    let label = null;
+    if (spec.label) {
+      label = document.createElementNS(NS, 'text');
+      label.setAttribute('class', 'gw-wire-label');
+      label.textContent = spec.label;
+      svg.append(label);
+    }
+    return { ...spec, path, label };
+  });
+  const wireById = Object.fromEntries(wires.map(w => [w.id, w]));
+  const dot = document.createElementNS(NS, 'circle');
+  dot.setAttribute('class', 'gw-dot');
+  dot.setAttribute('r', '5');
+  svg.append(dot);
+
+  function box(key) {
+    const r = nodes.get(key).getBoundingClientRect();
+    const o = diagram.getBoundingClientRect();
+    return { l: r.left - o.left, r: r.right - o.left, t: r.top - o.top, b: r.bottom - o.top,
+      cx: (r.left + r.right) / 2 - o.left, cy: (r.top + r.bottom) / 2 - o.top };
+  }
+  function layoutWires() {
+    svg.setAttribute('width', diagram.scrollWidth);
+    svg.setAttribute('height', diagram.scrollHeight);
+    const source = box('source'), world = box('world'), agent = box('agent');
+    const tools = box('tools'), log = box('log'), interact = box('interact');
+    const set = (id, d, lx, ly) => {
+      const w = wireById[id];
+      w.path.setAttribute('d', d);
+      if (w.label) { w.label.setAttribute('x', lx); w.label.setAttribute('y', ly); }
+    };
+    const sy = source.cy;
+    set('init', `M${source.r + 4} ${sy}L${world.l - 4} ${sy}`);
+    set('query', `M${agent.r + 6} ${agent.cy - 8}L${tools.l - 6} ${agent.cy - 8}`);
+    set('obs', `M${tools.l - 6} ${agent.cy + 8}L${agent.r + 6} ${agent.cy + 8}`);
+    const rx = tools.cx;
+    set('resolve', `M${rx} ${world.b + 2}L${rx} ${tools.t - 4}`, rx + 8, (world.b + interact.t) / 2 + 4);
+    set('log', `M${tools.r + 4} ${log.cy}L${log.l - 4} ${log.cy}`);
+  }
+  new ResizeObserver(layoutWires).observe(diagram);
+  layoutWires();
+  renderCard(null);
+  shown = null;
+
+  // Idle loop: the world initializes, time passes and a condition changes,
+  // the agent queries, the tool resolves against W_t, the observation returns,
+  // and the exchange is logged. Paused while a component is focused.
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const clock = document.querySelector('#gw-clock-time');
+  const clockHand = document.querySelector('.gw-clock-face i');
+  const changes = ['x-weather', 'x-traffic', 'x-status', 'x-events'];
+  const steps = ['init', 'tick', 'query', 'resolve', 'obs', 'log'];
+  let minutes = 12 * 60, change = 0, step = 0, visible = false, timer = null;
+
+  function travel(wire, done) {
+    const length = wire.path.getTotalLength();
+    const start = performance.now();
+    dot.classList.add('is-moving');
+    wire.path.classList.add('is-flowing');
+    (function frame(now) {
+      const p = Math.min(1, (now - start) / 950);
+      const eased = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      const point = wire.path.getPointAtLength(eased * length);
+      dot.setAttribute('cx', point.x);
+      dot.setAttribute('cy', point.y);
+      if (p < 1) requestAnimationFrame(frame);
+      else { dot.classList.remove('is-moving'); wire.path.classList.remove('is-flowing'); done(); }
+    })(start);
+  }
+  function tick(done) {
+    minutes += 20;
+    clock.textContent = `t = ${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+    clockHand.style.setProperty('--hand', `${(minutes - 12 * 60) * 6}deg`);
+    const key = changes[change++ % changes.length];
+    const pinged = [nodes.get(key), diagram.querySelector(`[data-hs="hs-${key.slice(2)}"]`), nodes.get('clock')];
+    pinged.forEach(el => el && el.classList.add('gw-ping'));
+    setTimeout(() => { pinged.forEach(el => el && el.classList.remove('gw-ping')); done(); }, 1300);
+  }
+  function next() {
+    timer = null;
+    if (reduced.matches || !visible || diagram.dataset.focus || document.hidden) return;
+    const current = steps[step];
+    step = (step + 1) % steps.length;
+    const after = () => { timer = setTimeout(next, current === 'log' ? 900 : 160); };
+    if (current === 'tick') tick(after); else travel(wireById[current], after);
+  }
+  function resume() { if (!timer) timer = setTimeout(next, 400); }
+  new IntersectionObserver(entries => { visible = entries[0].isIntersecting; if (visible) resume(); }).observe(diagram);
+  diagram.addEventListener('pointerleave', resume);
+  diagram.addEventListener('focusout', resume);
+  diagram.addEventListener('click', resume);
+  document.addEventListener('visibilitychange', resume);
+})();
 
 const replayPanel = document.querySelector('#replay-panel');
 const replayMap = replayPanel.querySelector('.replay-map-frame');
