@@ -108,47 +108,23 @@ body > header .nav nav { font-weight: 550; }
   #authors-and-title .affiliations { font-size: 13px; }
 }
 
-/* Align the abstract and film with the main content grid. */
-#abstract {
+/* Keep the overview video on the main content grid. */
+#film {
   max-width: 1280px;
-  padding-block: 26px 34px;
-  color: #2e2d29;
-  font-family: "Source Serif 4", Georgia, serif;
+  padding-block: 0 34px;
 }
 
-#abstract h2 {
-  margin: 0 0 18px;
-  text-align: center;
-  font: 650 clamp(27px, 2.8vw, 36px)/1.25 "Source Serif 4", Georgia, serif;
-  letter-spacing: -.4px;
-}
-
-#abstract .abstract-copy { max-width: none; margin: 0; }
-#abstract .abstract-copy p {
-  margin-bottom: 18px;
-  color: #2e2d29;
-  font-size: 17px;
-  line-height: 1.75;
-  text-align: justify;
-}
-
-#abstract .film-section { padding: 16px 0 0; }
-#abstract .film-player {
+#film .film-player {
   border: 0;
   border-radius: 0;
   padding: 0;
   box-shadow: none;
   background: #fff;
 }
-#abstract .film-player video { border-radius: 0; }
+#film .film-player video { border-radius: 0; }
 
 @media (max-width: 760px) {
-  #abstract {
-    padding-block: 20px 28px;
-  }
-  #abstract h2 { margin-bottom: 14px; }
-  #abstract .abstract-copy p { font-size: 16px; line-height: 1.65; hyphens: auto; }
-  #abstract .film-section { padding-top: 12px; }
+  #film { padding-bottom: 28px; }
 }
 
 /* Benchmark statistics. */
@@ -251,7 +227,7 @@ body > header .nav nav { font-weight: 550; }
   text-decoration: none;
   transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
-#authors-and-title .resource-buttons svg { width: 20px; height: 20px; flex: 0 0 20px; }
+#authors-and-title .resource-buttons :is(svg, .resource-icon) { width: 20px; height: 20px; flex: 0 0 20px; }
 #authors-and-title .resource-buttons a > span { white-space: nowrap; }
 #authors-and-title .resource-buttons .primary {
   border-color: #244d3d;
@@ -265,6 +241,5 @@ body > header .nav nav { font-weight: 550; }
 @media (max-width: 600px) {
   #authors-and-title .resource-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 370px; margin-inline: auto; }
   #authors-and-title .resource-buttons a { gap: 5px; min-height: 41px; padding: 8px 6px; font-size: 13px; }
-  #authors-and-title .resource-buttons svg { width: 18px; height: 18px; flex-basis: 18px; }
-  #authors-and-title .resource-buttons .primary { grid-column: 1 / -1; }
+  #authors-and-title .resource-buttons :is(svg, .resource-icon) { width: 18px; height: 18px; flex-basis: 18px; }
 }
