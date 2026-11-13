@@ -1388,3 +1388,27 @@ bindTabs('[data-paper-count]', 'paperCount', showPaperCounts);
 new ResizeObserver(drawPaperLineChart).observe(paperCanvas);
 showPaperContrast('apply');
 showPaperCounts('necessary');
+
+const copyBibtex = document.querySelector('#copy-bibtex');
+const copyBibtexLabel = copyBibtex.querySelector('span');
+const bibtex = document.querySelector('#bibtex');
+const bibtexStatus = document.querySelector('#bibtex-status');
+let bibtexResetTimer;
+
+copyBibtex.addEventListener('click', async () => {
+  clearTimeout(bibtexResetTimer);
+  bibtexStatus.textContent = '';
+  try {
+    await navigator.clipboard.writeText(bibtex.textContent);
+    copyBibtexLabel.textContent = 'Copied';
+    copyBibtex.dataset.state = 'copied';
+    bibtexResetTimer = setTimeout(() => {
+      copyBibtexLabel.textContent = 'Copy BibTeX';
+      delete copyBibtex.dataset.state;
+    }, 2000);
+  } catch {
+    copyBibtexLabel.textContent = 'Copy BibTeX';
+    delete copyBibtex.dataset.state;
+    bibtexStatus.textContent = 'Could not copy automatically. Select the citation to copy it.';
+  }
+});

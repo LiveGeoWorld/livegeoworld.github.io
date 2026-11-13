@@ -243,3 +243,107 @@ body > header .nav nav { font-weight: 550; }
   #authors-and-title .resource-buttons a { gap: 5px; min-height: 41px; padding: 8px 6px; font-size: 13px; }
   #authors-and-title .resource-buttons :is(svg, .resource-icon) { width: 18px; height: 18px; flex-basis: 18px; }
 }
+
+/* Citation: aligned with the resource links above (same .85fr / 1.15fr grid). */
+.citation-section { border-top: 1px solid var(--line); background: #fff; }
+.citation-layout {
+  display: grid;
+  grid-template-columns: .85fr 1.15fr;
+  gap: 24px 65px;
+  align-items: start;
+  padding-block: clamp(44px, 5vw, 72px);
+}
+.citation-intro .eyebrow { margin-bottom: 12px; }
+.citation-intro h2 { margin: 0; font-size: clamp(28px, 2.6vw, 36px); }
+.citation-intro p { margin: 14px 0 18px; max-width: 34ch; font-size: 15px; line-height: 1.65; color: var(--muted); }
+.citation-arxiv {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border: 1px solid #d7e2da;
+  border-radius: 999px;
+  color: var(--ink);
+  font: 600 13px/1 ui-monospace, Consolas, monospace;
+  transition: border-color .2s, background-color .2s;
+}
+.citation-arxiv span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #b31b1b;
+  color: #fff;
+  font: 700 11px/1 "Segoe UI", Arial, sans-serif;
+  letter-spacing: .02em;
+}
+.citation-arxiv:hover { border-color: #94b3a0; background: #f7faf8; }
+.citation-arxiv:focus-visible { outline: 2px solid #5a8e70; outline-offset: 3px; }
+
+.citation-card {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #dfe5e1;
+  border-radius: 12px;
+  background: #f8faf9;
+  box-shadow: 0 1px 2px rgb(30 60 41 / 4%), 0 12px 30px rgb(30 60 41 / 6%);
+}
+.citation-card-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 8px 8px 8px 18px;
+  border-bottom: 1px solid #e3e9e5;
+  background: #fff;
+}
+.citation-format { font-size: 12px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+#copy-bibtex {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid #d7e2da;
+  border-radius: 8px;
+  background: #fff;
+  color: #244d3d;
+  font: 600 13px/1 "Segoe UI", Arial, sans-serif;
+  cursor: pointer;
+  transition: border-color .2s, background-color .2s, color .2s;
+}
+#copy-bibtex:hover { border-color: #94b3a0; background: #f3f7f4; }
+#copy-bibtex .icon-done { display: none; }
+#copy-bibtex[data-state="copied"] { border-color: #244d3d; background: #244d3d; color: #fff; }
+#copy-bibtex[data-state="copied"] .icon-copy { display: none; }
+#copy-bibtex[data-state="copied"] .icon-done { display: inline; }
+#copy-bibtex:focus-visible, .citation-card pre:focus-visible { outline: 2px solid #5a8e70; outline-offset: 2px; }
+.citation-card pre {
+  margin: 0;
+  padding: 18px 20px 20px;
+  overflow-x: auto;
+  color: #6b7a76;
+  font: 12.5px/1.75 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  white-space: pre;
+  tab-size: 2;
+  scrollbar-width: thin;
+  scrollbar-color: #c9d4ce transparent;
+}
+.citation-card pre::-webkit-scrollbar { height: 6px; }
+.citation-card pre::-webkit-scrollbar-thumb { border-radius: 3px; background: #c9d4ce; }
+.citation-card code { font: inherit; }
+.bib-type { color: #176c63; font-weight: 700; }
+.bib-key { color: var(--ink); font-weight: 600; }
+.bib-field { color: #28679a; }
+.bib-value { color: var(--ink); }
+.citation-status { grid-column: 2; color: #9b3b2d; font-size: 13px; }
+.citation-status:empty { display: none; }
+@media (max-width: 900px) {
+  .citation-layout { grid-template-columns: 1fr; gap: 22px; }
+  .citation-intro p { max-width: none; }
+  .citation-status { grid-column: 1; }
+}
+@media (max-width: 720px) {
+  .citation-card pre { padding: 14px 16px 16px; font-size: 12px; }
+  .citation-card-bar { padding-left: 14px; }
+}
